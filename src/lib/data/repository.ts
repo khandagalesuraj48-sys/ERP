@@ -18,6 +18,7 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import type {
   Machinery,
   LogBook,
+  LogBookShift,
   FuelIssue,
   Breakdown,
   MaintenanceRecord,
@@ -503,10 +504,16 @@ function mapVendorToDb(v: Partial<Vendor>): any {
 }
 
 function mapDbToLogBook(r: any): LogBook {
+  const parsedShift = (r.shift as LogBookShift) ||
+    (r.remarks?.match(/\[Shift:\s*(Day|Night)\]/i)?.[1] as LogBookShift) ||
+    (r.work_description?.match(/\[Shift:\s*(Day|Night)\]/i)?.[1] as LogBookShift) ||
+    null;
+
   return {
     id: r.id,
     logNo: r.log_no,
     date: r.date,
+    shift: parsedShift,
     machineryId: r.machinery_id,
     engineId: r.engine_id || null,
     isMeterReset: Boolean(r.is_meter_reset),
@@ -534,6 +541,7 @@ function mapLogBookToDb(l: Partial<LogBook>): any {
   if (l.id !== undefined) db.id = l.id;
   if (l.logNo !== undefined) db.log_no = l.logNo;
   if (l.date !== undefined) db.date = l.date;
+  if (l.shift !== undefined) db.shift = l.shift || null;
   if (l.machineryId !== undefined) db.machinery_id = l.machineryId;
   if (l.engineId !== undefined) db.engine_id = l.engineId || null;
   if (l.isMeterReset !== undefined) db.is_meter_reset = Boolean(l.isMeterReset);
@@ -1289,13 +1297,15 @@ export async function getDailyFuelIssued(
 export async function checkExistingLogBook(
   machineryId: string,
   date: string,
-  engineId?: string | null
+  engineId?: string | null,
+  shift?: LogBookShift | null
 ): Promise<LogBook | null> {
   const allLogs = await getLogBooks(machineryId);
   const found = allLogs.find((l) => 
     l.machineryId === machineryId && 
     l.date === date && 
     (l.engineId || null) === (engineId || null) &&
+    (!shift || l.shift === shift) &&
     l.status !== "cancelled"
   );
   return found || null;
@@ -1336,7 +1346,19 @@ export async function createLogBook(log: Omit<LogBook, "id" | "totalKmHours" | "
       logNo: safeLogNo,
       id: newId,
     });
-    const { data, error } = await supabase.from("log_books").insert(payload).select().single();
+    let { data, error } = await supabase.from("log_books").insert(payload).select().single();
+    
+    // In case column 'shift' does not exist yet on live remote table
+    if (error && error.code === "42703") {
+      delete payload.shift;
+      if (log.shift && !payload.remarks?.includes("[Shift:")) {
+        payload.remarks = payload.remarks ? `${payload.remarks} [Shift: ${log.shift}]` : `[Shift: ${log.shift}]`;
+      }
+      const retryCol = await supabase.from("log_books").insert(payload).select().single();
+      data = retryCol.data;
+      error = retryCol.error;
+    }
+
     if (error) {
       // In case of unique constraint race condition, retry with guaranteed unique number
       if (error.code === "23505") {
@@ -1388,7 +1410,18 @@ export async function updateLogBook(id: string, updates: Partial<LogBook>): Prom
   if (supabase) {
     const payload = mapLogBookToDb(updates);
     payload.updated_at = new Date().toISOString();
-    const { data, error } = await supabase.from("log_books").update(payload).eq("id", id).select().single();
+    let { data, error } = await supabase.from("log_books").update(payload).eq("id", id).select().single();
+
+    if (error && error.code === "42703") {
+      delete payload.shift;
+      if (updates.shift && !payload.remarks?.includes("[Shift:")) {
+        payload.remarks = payload.remarks ? `${payload.remarks} [Shift: ${updates.shift}]` : `[Shift: ${updates.shift}]`;
+      }
+      const retryCol = await supabase.from("log_books").update(payload).eq("id", id).select().single();
+      data = retryCol.data;
+      error = retryCol.error;
+    }
+
     if (error) throw new Error(error.message);
 
     // If closing reading updated, advance machinery current reading

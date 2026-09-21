@@ -315,11 +315,13 @@ export interface FuelTank {
 // 4. Daily Log Book
 // ---------------------------------------------------------------------------
 export type LogBookStatus = "draft" | "approved" | "cancelled";
+export type LogBookShift = "Day" | "Night";
 
 export interface LogBook {
   id: string;
   logNo: string;
   date: string;
+  shift?: LogBookShift | null;
   machineryId: string;
   engineId?: string | null;
   projectId?: string | null;

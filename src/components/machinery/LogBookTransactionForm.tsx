@@ -67,6 +67,7 @@ export function LogBookTransactionForm({
   // Transaction Fields
   const [formLogNo, setFormLogNo] = useState<string>("");
   const [formDate, setFormDate] = useState<string>(""); // MUST start blank
+  const [formShift, setFormShift] = useState<"Day" | "Night" | "">(""); // MUST start blank
   const [formMachineryId, setFormMachineryId] = useState<string>("");
   const [formProjectId, setFormProjectId] = useState<string>("");
   const [formSiteId, setFormSiteId] = useState<string>("");
@@ -92,6 +93,12 @@ export function LogBookTransactionForm({
   const [sameDateLogs, setSameDateLogs] = useState<LogBook[]>([]);
   const [showSameDateDetails, setShowSameDateDetails] = useState<boolean>(false);
   const [sameDateNoticeDismissed, setSameDateNoticeDismissed] = useState<boolean>(false);
+
+  // Check if same combination (Machinery + Date + Shift) already has an entry
+  const matchingShiftLog = useMemo(() => {
+    if (!formMachineryId || !formDate || !formShift) return null;
+    return sameDateLogs.find((l) => l.shift === formShift);
+  }, [formMachineryId, formDate, formShift, sameDateLogs]);
 
   // Operational Fields
   const [startTime, setStartTime] = useState<string>("08:00");
@@ -147,6 +154,7 @@ export function LogBookTransactionForm({
           if (existingLog && isMounted) {
             setFormLogNo(existingLog.logNo);
             setFormDate(existingLog.date);
+            setFormShift(existingLog.shift || "");
             setFormMachineryId(existingLog.machineryId);
             setFormProjectId(existingLog.projectId || "");
             setFormSiteId(existingLog.siteId || "");
@@ -362,6 +370,9 @@ export function LogBookTransactionForm({
     if (!formDate || formDate.trim() === "") {
       newErrors.date = "Transaction Date is required. Please select a date.";
     }
+    if (!formShift || formShift.trim() === "") {
+      newErrors.shift = "Please select a shift.";
+    }
     if (!formMachineryId || formMachineryId.trim() === "") {
       newErrors.machineryId = "Please select a Machinery / Equipment.";
     }
@@ -412,6 +423,7 @@ export function LogBookTransactionForm({
         await updateLogBook(initialLogId, {
           logNo: formLogNo,
           date: formDate,
+          shift: (formShift as "Day" | "Night") || null,
           machineryId: formMachineryId,
           projectId: formProjectId || null,
           siteId: formSiteId || null,
@@ -446,6 +458,7 @@ export function LogBookTransactionForm({
             await createLogBook({
               logNo: subLogNo,
               date: formDate,
+              shift: (formShift as "Day" | "Night") || null,
               machineryId: formMachineryId,
               engineId: eng.engineId,
               isMeterReset: eng.isMeterReset,
@@ -476,6 +489,7 @@ export function LogBookTransactionForm({
           await createLogBook({
             logNo: formLogNo,
             date: formDate,
+            shift: (formShift as "Day" | "Night") || null,
             machineryId: formMachineryId,
             engineId: primaryEngId,
             isMeterReset: singleIsMeterReset,
@@ -649,11 +663,46 @@ export function LogBookTransactionForm({
             {errors.date && <p className="text-[11px] text-red-500">{errors.date}</p>}
           </div>
 
-          {/* STEP 2: MACHINERY SELECTION */}
+          {/* STEP 2: SHIFT (MUST START BLANK - MANDATORY) */}
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
+              <span>
+                2. Shift <span className="text-red-500">*</span>
+              </span>
+              {!formShift && <span className="text-[10px] text-amber-600 font-medium">Required</span>}
+            </label>
+            <select
+              disabled={isViewMode}
+              value={formShift}
+              onChange={(e) => {
+                const val = e.target.value as "Day" | "Night" | "";
+                setFormShift(val);
+                if (errors.shift) {
+                  setErrors((prev) => {
+                    const next = { ...prev };
+                    delete next.shift;
+                    return next;
+                  });
+                }
+              }}
+              className={`w-full px-3 py-1.5 bg-white border rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
+                errors.shift
+                  ? "border-red-400 bg-red-50/20"
+                  : "border-slate-300 hover:border-slate-400"
+              }`}
+            >
+              <option value="">-- Select Shift --</option>
+              <option value="Day">Day</option>
+              <option value="Night">Night</option>
+            </select>
+            {errors.shift && <p className="text-[11px] text-red-500">{errors.shift}</p>}
+          </div>
+
+          {/* STEP 3: MACHINERY SELECTION (MUST START BLANK) */}
           <div className="space-y-1 sm:col-span-1 lg:col-span-2">
             <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
               <span>
-                2. Select Equipment / Machinery <span className="text-red-500">*</span>
+                3. Select Equipment / Machinery <span className="text-red-500">*</span>
               </span>
               {selectedMachine && (
                 <span className="text-[10px] font-mono text-slate-500">
@@ -676,7 +725,7 @@ export function LogBookTransactionForm({
                 <option key={m.id} value={m.id}>
                   {m.registrationNo
                     ? `${m.machineryName} — ${m.registrationNo} (${m.assetCode})`
-                    : `${m.machineryName} (Unregistered) (${m.assetCode})`}
+                    : `${m.machineryName} (${m.assetCode})`}
                 </option>
               ))}
             </select>
@@ -712,9 +761,9 @@ export function LogBookTransactionForm({
             </div>
           </div>
 
-          {/* PROJECT (AUTO-LOADED) */}
+          {/* PROJECT ASSIGNMENT */}
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-slate-700">Project</label>
+            <label className="block text-xs font-semibold text-slate-700">Project Scope</label>
             <select
               disabled={isViewMode}
               value={formProjectId}
@@ -733,9 +782,9 @@ export function LogBookTransactionForm({
             </select>
           </div>
 
-          {/* SITE (AUTO-LOADED) */}
+          {/* WORK SITE ASSIGNMENT */}
           <div className="space-y-1">
-            <label className="block text-xs font-semibold text-slate-700">Site</label>
+            <label className="block text-xs font-semibold text-slate-700">Work Site</label>
             <select
               disabled={isViewMode}
               value={formSiteId}
@@ -779,8 +828,8 @@ export function LogBookTransactionForm({
           </div>
         </div>
 
-        {/* NON-BLOCKING SAME-DATE NOTICE (REQUIREMENT 5 & 11) */}
-        {sameDateLogs.length > 0 && !sameDateNoticeDismissed && (
+        {/* NON-BLOCKING SAME-COMBINATION NOTICE (REQUIREMENT 4) */}
+        {matchingShiftLog && !sameDateNoticeDismissed && (
           <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-900">
             <div className="flex items-start gap-2.5">
               <span className="p-1 rounded-md bg-amber-100 text-amber-700 mt-0.5">
@@ -788,12 +837,10 @@ export function LogBookTransactionForm({
               </span>
               <div>
                 <p className="text-xs font-semibold text-amber-900">
-                  Existing entries found for this machinery on this date ({sameDateLogs.length}{" "}
-                  {sameDateLogs.length === 1 ? "entry" : "entries"}).
+                  Existing log entry found for this machinery, date and shift.
                 </p>
                 <p className="text-[11px] text-amber-700">
-                  Multiple shifts or trips on the same date are allowed. You can continue recording
-                  this new entry.
+                  Entry #{matchingShiftLog.logNo} is already recorded on {formDate} ({formShift} Shift). You may continue if adding an additional shift record or view the existing entry.
                 </p>
               </div>
             </div>
@@ -814,6 +861,12 @@ export function LogBookTransactionForm({
               >
                 Continue New Entry
               </button>
+              <Link
+                href="/machinery/log-book"
+                className="px-2.5 py-1 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </Link>
             </div>
           </div>
         )}

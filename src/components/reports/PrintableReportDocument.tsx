@@ -11,6 +11,9 @@ export interface ReportColumn {
 export interface PrintableReportProps {
   companyName?: string;
   companyAddress?: string;
+  companyPhone?: string;
+  companyEmail?: string;
+  companyGstin?: string;
   reportTitle: string;
   periodText?: string;
   generatedDate?: string;
@@ -29,8 +32,11 @@ export interface PrintableReportProps {
 }
 
 export const PrintableReportDocument: React.FC<PrintableReportProps> = ({
-  companyName = "MILESTONE CONSULTANCY",
-  companyAddress = "Construction & Infrastructure Plant Management • NH-48 Express Corridor Zone, Navi Mumbai, MH",
+  companyName = "MILESTONE INFRASTRUCTURE ERP",
+  companyAddress = "Construction & Infrastructure Equipment Operations • MH",
+  companyPhone,
+  companyEmail,
+  companyGstin,
   reportTitle,
   periodText,
   generatedDate = new Date().toLocaleString("en-IN", {
@@ -80,6 +86,13 @@ export const PrintableReportDocument: React.FC<PrintableReportProps> = ({
               <p className="text-[11px] text-slate-600 mt-0.5 max-w-xl leading-relaxed">
                 {companyAddress}
               </p>
+              {(companyPhone || companyEmail || companyGstin) && (
+                <div className="flex flex-wrap items-center gap-3 text-[10px] text-slate-500 mt-1">
+                  {companyPhone && <span>Tel: {companyPhone}</span>}
+                  {companyEmail && <span>Email: {companyEmail}</span>}
+                  {companyGstin && <span>GSTIN: {companyGstin}</span>}
+                </div>
+              )}
             </div>
             <div className="text-right">
               <span className="inline-block border border-slate-900 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-900 bg-slate-100">

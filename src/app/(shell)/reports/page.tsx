@@ -65,14 +65,103 @@ export default function ReportsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [sites, setSites] = useState<Site[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [engines, setEngines] = useState<Engine[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
+  const [quickDatePreset, setQuickDatePreset] = useState<string>("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filterMachine, setFilterMachine] = useState("all");
   const [filterProject, setFilterProject] = useState("all");
+  const [filterSite, setFilterSite] = useState("all");
+  const [filterEngine, setFilterEngine] = useState("all");
+  const [filterShift, setFilterShift] = useState<"all" | "Day" | "Night">("all");
   const [groupingInterval, setGroupingInterval] = useState<"Day" | "Week" | "Month" | "Total">("Total");
+
+  // Cascading site options based on selected project
+  const filteredSites = React.useMemo(() => {
+    if (filterProject === "all") return sites;
+    return sites.filter((s) => s.projectId === filterProject);
+  }, [sites, filterProject]);
+
+  // Cascading engine options based on selected machinery
+  const filteredEngines = React.useMemo(() => {
+    if (filterMachine === "all") return engines;
+    return engines.filter((e) => e.machineryId === filterMachine);
+  }, [engines, filterMachine]);
+
+  // Date range validation
+  const isDateRangeInvalid = Boolean(startDate && endDate && endDate < startDate);
+
+  const handleQuickDateChange = (preset: string) => {
+    setQuickDatePreset(preset);
+    if (preset === "all" || preset === "custom") {
+      if (preset === "all") {
+        setStartDate("");
+        setEndDate("");
+      }
+      return;
+    }
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    if (preset === "today") {
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (preset === "yesterday") {
+      const y = new Date(now);
+      y.setDate(y.getDate() - 1);
+      const yStr = y.toISOString().slice(0, 10);
+      setStartDate(yStr);
+      setEndDate(yStr);
+    } else if (preset === "this_week") {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const mon = new Date(now);
+      mon.setDate(diff);
+      setStartDate(mon.toISOString().slice(0, 10));
+      setEndDate(todayStr);
+    } else if (preset === "this_month") {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      setStartDate(start.toISOString().slice(0, 10));
+      setEndDate(todayStr);
+    } else if (preset === "last_month") {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0);
+      setStartDate(start.toISOString().slice(0, 10));
+      setEndDate(end.toISOString().slice(0, 10));
+    } else if (preset === "this_fy") {
+      const curMonth = now.getMonth();
+      const startYear = curMonth >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+      const start = new Date(startYear, 3, 1);
+      setStartDate(start.toISOString().slice(0, 10));
+      setEndDate(todayStr);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setQuickDatePreset("all");
+    setStartDate("");
+    setEndDate("");
+    setFilterMachine("all");
+    setFilterProject("all");
+    setFilterSite("all");
+    setFilterEngine("all");
+    setFilterShift("all");
+    setGroupingInterval("Total");
+    showToast("Filters Reset", "All reporting filters have been cleared to default.");
+  };
+
+  const handleApplyFilters = () => {
+    if (isDateRangeInvalid) {
+      showToast("Invalid Date Range", "To Date cannot be earlier than From Date.", "error");
+      return;
+    }
+    if (activeReportKey === "fuel-consumption" || activeReportKey === "fuel-efficiency") {
+      loadDailyConsumption();
+    }
+    showToast("Filters Applied", "Active report data scope refreshed.");
+  };
 
   // Daily Consumption & Theoretical Fuel Balance records
   const [dailyConsumptionRecords, setDailyConsumptionRecords] = useState<DailyFuelConsumptionRecord[]>([]);
@@ -84,7 +173,7 @@ export default function ReportsPage() {
   const loadAllData = useCallback(async () => {
     setLoading(true);
     try {
-      const [m, l, f, b, mnt, att, p, s, v] = await Promise.all([
+      const [m, l, f, b, mnt, att, p, s, v, engs] = await Promise.all([
         getMachinery(),
         getLogBooks(),
         getFuelIssues(),
@@ -94,6 +183,7 @@ export default function ReportsPage() {
         getProjects(),
         getSites(),
         getVendors(),
+        getEngines(),
       ]);
       setMachinery(m);
       setLogs(l);
@@ -104,6 +194,7 @@ export default function ReportsPage() {
       setProjects(p);
       setSites(s);
       setVendors(v);
+      setEngines(engs);
     } catch (e: any) {
       showToast("Error", e.message || "Failed to load report datasets.", "error");
     } finally {
@@ -119,6 +210,8 @@ export default function ReportsPage() {
         fromDate: startDate || undefined,
         toDate: endDate || undefined,
         projectId: filterProject !== "all" ? filterProject : undefined,
+        siteId: filterSite !== "all" ? filterSite : undefined,
+        engineId: filterEngine !== "all" ? filterEngine : undefined,
       });
       setDailyConsumptionRecords(recs);
     } catch (e: any) {
@@ -126,7 +219,7 @@ export default function ReportsPage() {
     } finally {
       setLoadingDailyConsumption(false);
     }
-  }, [filterMachine, startDate, endDate, filterProject]);
+  }, [filterMachine, startDate, endDate, filterProject, filterSite, filterEngine]);
 
   useEffect(() => {
     loadAllData();
@@ -339,6 +432,30 @@ export default function ReportsPage() {
             ? projects.find((p) => p.id === filterProject)?.code || filterProject
             : "All Projects",
       },
+      ...(filterSite !== "all"
+        ? [
+            {
+              label: "Site Scope",
+              value: sites.find((s) => s.id === filterSite)?.name || filterSite,
+            },
+          ]
+        : []),
+      ...(filterEngine !== "all"
+        ? [
+            {
+              label: "Engine Scope",
+              value: engines.find((e) => e.id === filterEngine)?.engineName || filterEngine,
+            },
+          ]
+        : []),
+      ...(filterShift !== "all"
+        ? [
+            {
+              label: "Shift Scope",
+              value: `${filterShift} Shift`,
+            },
+          ]
+        : []),
     ];
 
     if (activeReportKey === "machinery-register") {
@@ -352,7 +469,13 @@ export default function ReportsPage() {
         { header: "Reading", width: "10%", align: "right" },
         { header: "Status", width: "8%" },
       ];
-      const rows = machinery.map((m) => [
+      const targetMachines = machinery.filter((m) => {
+        if (filterMachine !== "all" && m.id !== filterMachine) return false;
+        if (filterProject !== "all" && m.currentProjectId !== filterProject && m.projectId !== filterProject) return false;
+        if (filterSite !== "all" && m.currentSiteId !== filterSite) return false;
+        return true;
+      });
+      const rows = targetMachines.map((m) => [
         m.assetCode,
         m.registrationNo || "Non-Road",
         getMachineryDisplayName(m),
@@ -376,17 +499,22 @@ export default function ReportsPage() {
 
     if (activeReportKey === "daily-log") {
       const columns: ReportColumn[] = [
-        { header: "Log No", width: "16%" },
+        { header: "Log No", width: "14%" },
         { header: "Date", width: "10%" },
-        { header: "Machinery / Equipment", width: "24%" },
-        { header: "Operator", width: "16%" },
-        { header: "Opening", width: "9%", align: "right" },
-        { header: "Closing", width: "9%", align: "right" },
+        { header: "Shift", width: "8%", align: "center" },
+        { header: "Machinery / Equipment", width: "22%" },
+        { header: "Operator", width: "14%" },
+        { header: "Opening", width: "8%", align: "right" },
+        { header: "Closing", width: "8%", align: "right" },
         { header: "Run", width: "8%", align: "right" },
         { header: "Work Hrs", width: "8%", align: "right" },
       ];
       const filteredLogs = logs.filter((l) => {
         if (filterMachine !== "all" && l.machineryId !== filterMachine) return false;
+        if (filterProject !== "all" && l.projectId !== filterProject) return false;
+        if (filterSite !== "all" && l.siteId !== filterSite) return false;
+        if (filterEngine !== "all" && l.engineId !== filterEngine) return false;
+        if (filterShift !== "all" && l.shift !== filterShift) return false;
         if (startDate && l.date < startDate) return false;
         if (endDate && l.date > endDate) return false;
         return l.status !== "cancelled";
@@ -396,6 +524,7 @@ export default function ReportsPage() {
         return [
           l.logNo,
           l.date,
+          l.shift || "—",
           m ? getMachineryDisplayName(m) : l.machineryId,
           l.operatorName || "—",
           l.openingReading,
@@ -412,7 +541,7 @@ export default function ReportsPage() {
         filters: activeFilters,
         columns,
         rows,
-        totals: ["Total", "", "", "", "", "", totalRun.toFixed(1), totalWork.toFixed(1)],
+        totals: ["Total", "", "", "", "", "", "", totalRun.toFixed(1), totalWork.toFixed(1)],
         defaultOrientation: "landscape",
       };
     }
@@ -471,20 +600,28 @@ export default function ReportsPage() {
         { header: "Variance", width: "9%", align: "right" },
         { header: "Status", width: "11%" },
       ];
-      const targetMachines = machinery.filter(
-        (m) => filterMachine === "all" || m.id === filterMachine
-      );
+      const targetMachines = machinery.filter((m) => {
+        if (filterMachine !== "all" && m.id !== filterMachine) return false;
+        if (filterProject !== "all" && m.currentProjectId !== filterProject && m.projectId !== filterProject) return false;
+        if (filterSite !== "all" && m.currentSiteId !== filterSite) return false;
+        return true;
+      });
       let totalRunSum = 0;
       let totalFuelSum = 0;
       const rows = targetMachines.map((m) => {
         const mFuels = fuels.filter((f) => {
           if (f.machineryId !== m.id || f.status !== "confirmed") return false;
+          if (filterSite !== "all" && f.siteId !== filterSite) return false;
+          if (filterEngine !== "all" && f.engineId !== filterEngine) return false;
           if (startDate && f.issueDate < startDate) return false;
           if (endDate && f.issueDate > endDate) return false;
           return true;
         });
         const mLogs = logs.filter((l) => {
           if (l.machineryId !== m.id || l.status === "cancelled") return false;
+          if (filterSite !== "all" && l.siteId !== filterSite) return false;
+          if (filterEngine !== "all" && l.engineId !== filterEngine) return false;
+          if (filterShift !== "all" && l.shift !== filterShift) return false;
           if (startDate && l.date < startDate) return false;
           if (endDate && l.date > endDate) return false;
           return true;
@@ -643,6 +780,8 @@ export default function ReportsPage() {
       ];
       const filteredBreakdowns = breakdowns.filter((b) => {
         if (filterMachine !== "all" && b.machineryId !== filterMachine) return false;
+        if (filterProject !== "all" && b.projectId !== filterProject) return false;
+        if (filterSite !== "all" && b.siteId !== filterSite) return false;
         if (startDate && b.breakdownDate < startDate) return false;
         if (endDate && b.breakdownDate > endDate) return false;
         return true;
@@ -684,7 +823,13 @@ export default function ReportsPage() {
       let grandLabour = 0;
       let grandActual = 0;
       let grandServices = 0;
-      const rows = machinery.map((m) => {
+      const targetMachines = machinery.filter((m) => {
+        if (filterMachine !== "all" && m.id !== filterMachine) return false;
+        if (filterProject !== "all" && m.currentProjectId !== filterProject && m.projectId !== filterProject) return false;
+        if (filterSite !== "all" && m.currentSiteId !== filterSite) return false;
+        return true;
+      });
+      const rows = targetMachines.map((m) => {
         const mMnts = maintenances.filter((mnt) => {
           if (mnt.machineryId !== m.id) return false;
           if (startDate && mnt.serviceDate < startDate) return false;
@@ -730,6 +875,9 @@ export default function ReportsPage() {
       ];
       const filteredMnts = maintenances.filter((mnt) => {
         if (filterMachine !== "all" && mnt.machineryId !== filterMachine) return false;
+        const m = machinery.find((mac) => mac.id === mnt.machineryId);
+        if (filterProject !== "all" && m?.currentProjectId !== filterProject && m?.projectId !== filterProject) return false;
+        if (filterSite !== "all" && m?.currentSiteId !== filterSite) return false;
         if (startDate && mnt.serviceDate < startDate) return false;
         if (endDate && mnt.serviceDate > endDate) return false;
         return true;
@@ -770,7 +918,13 @@ export default function ReportsPage() {
       { header: "PUC Expiry", width: "11%" },
       { header: "Permit Expiry", width: "11%" },
     ];
-    const rows = machinery.map((m) => [
+    const targetComplianceMachines = machinery.filter((m) => {
+      if (filterMachine !== "all" && m.id !== filterMachine) return false;
+      if (filterProject !== "all" && m.currentProjectId !== filterProject && m.projectId !== filterProject) return false;
+      if (filterSite !== "all" && m.currentSiteId !== filterSite) return false;
+      return true;
+    });
+    const rows = targetComplianceMachines.map((m) => [
       m.assetCode,
       getMachineryDisplayName(m),
       m.ownership === "rental" ? "Rental" : "Own",
@@ -857,10 +1011,9 @@ export default function ReportsPage() {
                 </p>
               </div>
 
-              {/* Machinery & Project Filter in Report */}
-              <div className="flex flex-wrap items-center gap-2.5 print:hidden">
-                {/* Grouping Interval for Efficiency */}
-                {(activeReportKey === "fuel-efficiency" || activeReportKey === "fuel-consumption") && (
+              {/* Grouping Interval for Efficiency */}
+              {(activeReportKey === "fuel-efficiency" || activeReportKey === "fuel-consumption") && (
+                <div className="print:hidden">
                   <select
                     value={groupingInterval}
                     onChange={(e) => setGroupingInterval(e.target.value as any)}
@@ -871,33 +1024,261 @@ export default function ReportsPage() {
                     <option value="Week">Group by Week</option>
                     <option value="Month">Group by Month</option>
                   </select>
-                )}
+                </div>
+              )}
+            </div>
 
-                <select
-                  value={filterMachine}
-                  onChange={(e) => setFilterMachine(e.target.value)}
-                  className="form-select text-xs font-medium w-auto"
-                >
-                  <option value="all">All Machinery ({machinery.length})</option>
-                  {machinery.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.assetCode} — {getMachineryDisplayName(m)}
-                    </option>
-                  ))}
-                </select>
+            {/* UNIVERSAL FILTER PANEL & ACTION BAR */}
+            <div className="p-4 bg-slate-50/80 border border-slate-200/90 rounded-2xl space-y-3.5 print:hidden">
+              {/* 1. Quick Date Range Presets Strip */}
+              <div className="flex flex-wrap items-center gap-1.5 pb-2 border-b border-slate-200/70">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">
+                  Quick Ranges:
+                </span>
+                {[
+                  { id: "all", label: "All Dates" },
+                  { id: "today", label: "Today" },
+                  { id: "yesterday", label: "Yesterday" },
+                  { id: "this_week", label: "This Week" },
+                  { id: "this_month", label: "This Month" },
+                  { id: "last_month", label: "Last Month" },
+                  { id: "this_fy", label: "This FY" },
+                  { id: "custom", label: "Custom" },
+                ].map((preset) => (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleQuickDateChange(preset.id)}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                      quickDatePreset === preset.id
+                        ? "bg-blue-600 text-white shadow-xs"
+                        : "bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200/80"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
 
-                <select
-                  value={filterProject}
-                  onChange={(e) => setFilterProject(e.target.value)}
-                  className="form-select text-xs font-medium w-auto"
-                >
-                  <option value="all">All Projects ({projects.length})</option>
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.code} — {p.name}
-                    </option>
-                  ))}
-                </select>
+              {/* 2. Date Validation Banner */}
+              {isDateRangeInvalid && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2">
+                  <Icon name="error" className="text-rose-600 shrink-0" />
+                  <span>
+                    <strong>Invalid Date Range:</strong> &apos;To Date&apos; cannot be earlier than &apos;From Date&apos;. Please adjust your selection.
+                  </span>
+                </div>
+              )}
+
+              {/* 3. Multi-Dimensional Filter Selectors */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                {/* From Date */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    From Date
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      setQuickDatePreset("custom");
+                      setStartDate(e.target.value);
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                  />
+                </div>
+
+                {/* To Date */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    To Date
+                  </label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => {
+                      setQuickDatePreset("custom");
+                      setEndDate(e.target.value);
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                  />
+                </div>
+
+                {/* Project Scope */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Project
+                  </label>
+                  <select
+                    value={filterProject}
+                    onChange={(e) => {
+                      setFilterProject(e.target.value);
+                      setFilterSite("all");
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40 truncate"
+                  >
+                    <option value="all">All Projects ({projects.length})</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.code} — {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Site Scope (Cascading) */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Site
+                  </label>
+                  <select
+                    value={filterSite}
+                    onChange={(e) => setFilterSite(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40 truncate"
+                  >
+                    <option value="all">All Sites ({filteredSites.length})</option>
+                    {filteredSites.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Machinery Scope */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    Machinery
+                  </label>
+                  <select
+                    value={filterMachine}
+                    onChange={(e) => {
+                      setFilterMachine(e.target.value);
+                      setFilterEngine("all");
+                    }}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40 truncate"
+                  >
+                    <option value="all">All Machinery ({machinery.length})</option>
+                    {machinery.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.assetCode} — {getMachineryDisplayName(m)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Shift or Engine Scope */}
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                    {activeReportKey === "daily-log" ? "Shift" : "Engine"}
+                  </label>
+                  {activeReportKey === "daily-log" ? (
+                    <select
+                      value={filterShift}
+                      onChange={(e) => setFilterShift(e.target.value as any)}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                    >
+                      <option value="all">All Shifts</option>
+                      <option value="Day">Day Shift</option>
+                      <option value="Night">Night Shift</option>
+                    </select>
+                  ) : (
+                    <select
+                      value={filterEngine}
+                      onChange={(e) => setFilterEngine(e.target.value)}
+                      className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40 truncate"
+                    >
+                      <option value="all">All Engines ({filteredEngines.length})</option>
+                      {filteredEngines.map((eng) => (
+                        <option key={eng.id} value={eng.id}>
+                          {eng.engineName} ({eng.meterType})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+
+              {/* 4. Universal Action Bar */}
+              <div className="pt-2 border-t border-slate-200/70 flex flex-wrap items-center justify-between gap-3">
+                <div className="text-[11px] font-medium text-slate-500 flex flex-wrap items-center gap-1.5">
+                  <span>Active Scope:</span>
+                  <span className="font-semibold text-slate-800">
+                    {startDate || endDate ? `${startDate || "Earliest"} to ${endDate || "Latest"}` : "All Operations"}
+                  </span>
+                  {filterProject !== "all" && (
+                    <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold border border-blue-200/60">
+                      {projects.find((p) => p.id === filterProject)?.code}
+                    </span>
+                  )}
+                  {filterSite !== "all" && (
+                    <span className="px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-700 font-semibold border border-cyan-200/60">
+                      {sites.find((s) => s.id === filterSite)?.name}
+                    </span>
+                  )}
+                  {filterMachine !== "all" && (
+                    <span className="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-semibold border border-amber-200/60">
+                      {machinery.find((m) => m.id === filterMachine)?.assetCode}
+                    </span>
+                  )}
+                  {filterShift !== "all" && (
+                    <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200/60">
+                      {filterShift} Shift
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleApplyFilters}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition-colors"
+                  >
+                    <Icon name="filter_alt" className="text-sm" /> Apply Filters
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold text-xs shadow-xs transition-colors"
+                  >
+                    <Icon name="restart_alt" className="text-sm" /> Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPrintModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-semibold text-xs shadow-xs transition-colors"
+                  >
+                    <Icon name="print" className="text-sm" /> Print
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPrintModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-rose-700 border border-slate-300 font-semibold text-xs shadow-xs transition-colors"
+                  >
+                    <Icon name="picture_as_pdf" className="text-sm" /> PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleExportExcel}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-xs transition-colors"
+                  >
+                    <Icon name="table_chart" className="text-sm" /> Excel (.xlsx)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loadAllData();
+                      if (activeReportKey === "fuel-consumption" || activeReportKey === "fuel-efficiency") {
+                        loadDailyConsumption();
+                      }
+                      showToast("Refreshed", "Operational datasets reloaded.");
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 font-medium text-xs shadow-xs transition-colors"
+                    title="Reload data from database"
+                  >
+                    <Icon name="refresh" className={`text-sm ${loading ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -929,16 +1310,26 @@ export default function ReportsPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {machinery
-                        .filter((m) => filterMachine === "all" || m.id === filterMachine)
+                        .filter((m) => {
+                          if (filterMachine !== "all" && m.id !== filterMachine) return false;
+                          if (filterProject !== "all" && m.currentProjectId !== filterProject && m.projectId !== filterProject) return false;
+                          if (filterSite !== "all" && m.currentSiteId !== filterSite) return false;
+                          return true;
+                        })
                         .map((m) => {
                           const mFuels = fuels.filter((f) => {
                             if (f.machineryId !== m.id || f.status !== "confirmed") return false;
+                            if (filterSite !== "all" && f.siteId !== filterSite) return false;
+                            if (filterEngine !== "all" && f.engineId !== filterEngine) return false;
                             if (startDate && f.issueDate < startDate) return false;
                             if (endDate && f.issueDate > endDate) return false;
                             return true;
                           });
                           const mLogs = logs.filter((l) => {
                             if (l.machineryId !== m.id || l.status === "cancelled") return false;
+                            if (filterSite !== "all" && l.siteId !== filterSite) return false;
+                            if (filterEngine !== "all" && l.engineId !== filterEngine) return false;
+                            if (filterShift !== "all" && l.shift !== filterShift) return false;
                             if (startDate && l.date < startDate) return false;
                             if (endDate && l.date > endDate) return false;
                             return true;
@@ -1020,80 +1411,145 @@ export default function ReportsPage() {
             )}
 
             {/* REPORT 1: MACHINERY REGISTER */}
-            {activeReportKey === "machinery-register" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="table-head">
-                      <th className="px-4 py-3">Asset Code</th>
-                      <th className="px-4 py-3">Registration</th>
-                      <th className="px-4 py-3">Name &amp; Type</th>
-                      <th className="px-4 py-3">Make / Model</th>
-                      <th className="px-4 py-3">Meter</th>
-                      <th className="px-4 py-3">Current Reading</th>
-                      <th className="px-4 py-3">Assigned Project</th>
-                      <th className="px-4 py-3">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {machinery.map((m) => {
-                      const prj = projects.find((p) => p.id === m.currentProjectId);
-                      return (
-                        <tr key={m.id} className="table-row">
-                          <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{m.assetCode}</td>
-                          <td className="px-4 py-3 font-mono text-gray-600 text-xs">{m.registrationNo || "Non-Road"}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900 text-xs">{m.machineryName}</td>
-                          <td className="px-4 py-3 text-gray-600 text-xs">{m.make} {m.model}</td>
-                          <td className="px-4 py-3 font-mono font-semibold text-gray-700 text-xs">{m.meterType}</td>
-                          <td className="px-4 py-3 font-mono text-gray-900 text-xs">{m.currentReading}</td>
-                          <td className="px-4 py-3 text-gray-600 text-xs">{prj ? prj.code : "Unassigned"}</td>
-                          <td className="px-4 py-3">
-                            <StatusPill tone={m.status === "active" ? "green" : "red"}>{m.status}</StatusPill>
+            {activeReportKey === "machinery-register" && (() => {
+              const targetMachines = machinery.filter((m) => {
+                if (filterMachine !== "all" && m.id !== filterMachine) return false;
+                if (filterProject !== "all" && m.currentProjectId !== filterProject && m.projectId !== filterProject) return false;
+                if (filterSite !== "all" && m.currentSiteId !== filterSite) return false;
+                return true;
+              });
+              return (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="table-head">
+                        <th className="px-4 py-3">Asset Code</th>
+                        <th className="px-4 py-3">Registration</th>
+                        <th className="px-4 py-3">Name &amp; Type</th>
+                        <th className="px-4 py-3">Make / Model</th>
+                        <th className="px-4 py-3">Meter</th>
+                        <th className="px-4 py-3">Current Reading</th>
+                        <th className="px-4 py-3">Assigned Project</th>
+                        <th className="px-4 py-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {targetMachines.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-xs italic">
+                            No equipment records matched the selected filter scope.
                           </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      ) : (
+                        targetMachines.map((m) => {
+                          const prj = projects.find((p) => p.id === m.currentProjectId);
+                          return (
+                            <tr key={m.id} className="table-row">
+                              <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{m.assetCode}</td>
+                              <td className="px-4 py-3 font-mono text-gray-600 text-xs">{m.registrationNo || "Non-Road"}</td>
+                              <td className="px-4 py-3 font-medium text-gray-900 text-xs">{getMachineryDisplayName(m)}</td>
+                              <td className="px-4 py-3 text-gray-600 text-xs">{m.make} {m.model}</td>
+                              <td className="px-4 py-3 font-mono font-semibold text-gray-700 text-xs">{m.meterType}</td>
+                              <td className="px-4 py-3 font-mono text-gray-900 text-xs">{m.currentReading}</td>
+                              <td className="px-4 py-3 text-gray-600 text-xs">{prj ? prj.code : "Unassigned"}</td>
+                              <td className="px-4 py-3">
+                                <StatusPill tone={m.status === "active" ? "green" : "red"}>{m.status}</StatusPill>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* REPORT 2: DAILY LOG BOOK */}
-            {activeReportKey === "daily-log" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="table-head">
-                      <th className="px-4 py-3">Log No</th>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">Machine</th>
-                      <th className="px-4 py-3">Opening</th>
-                      <th className="px-4 py-3">Closing</th>
-                      <th className="px-4 py-3">Total Run</th>
-                      <th className="px-4 py-3">Work Hours</th>
-                      <th className="px-4 py-3">Operator</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {logs.map((l) => {
-                      const m = machinery.find((mac) => mac.id === l.machineryId);
-                      return (
-                        <tr key={l.id} className="table-row">
-                          <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{l.logNo}</td>
-                          <td className="px-4 py-3 text-gray-700 text-xs">{l.date}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900 text-xs">{m?.assetCode}</td>
-                          <td className="px-4 py-3 font-mono text-gray-600 text-xs">{l.openingReading}</td>
-                          <td className="px-4 py-3 font-mono text-gray-600 text-xs">{l.closingReading}</td>
-                          <td className="px-4 py-3 font-mono font-semibold text-gray-900 text-xs">{l.totalKmHours} {m?.meterType}</td>
-                          <td className="px-4 py-3 text-gray-600 text-xs">{l.workingHours || "—"}</td>
-                          <td className="px-4 py-3 text-gray-700 text-xs">{l.operatorName || "—"}</td>
+            {activeReportKey === "daily-log" && (() => {
+              const filteredLogs = logs.filter((l) => {
+                if (filterMachine !== "all" && l.machineryId !== filterMachine) return false;
+                if (filterProject !== "all" && l.projectId !== filterProject) return false;
+                if (filterSite !== "all" && l.siteId !== filterSite) return false;
+                if (filterEngine !== "all" && l.engineId !== filterEngine) return false;
+                if (filterShift !== "all" && l.shift !== filterShift) return false;
+                if (startDate && l.date < startDate) return false;
+                if (endDate && l.date > endDate) return false;
+                return l.status !== "cancelled";
+              });
+              const totalRun = filteredLogs.reduce((s, l) => s + (l.totalKmHours || 0), 0);
+              const totalWork = filteredLogs.reduce((s, l) => s + (l.workingHours || 0), 0);
+              return (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="table-head">
+                        <th className="px-4 py-3">Log No</th>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3">Shift</th>
+                        <th className="px-4 py-3">Machine</th>
+                        <th className="px-4 py-3 text-right">Opening</th>
+                        <th className="px-4 py-3 text-right">Closing</th>
+                        <th className="px-4 py-3 text-right">Total Run</th>
+                        <th className="px-4 py-3 text-right">Work Hours</th>
+                        <th className="px-4 py-3">Operator</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {filteredLogs.length === 0 ? (
+                        <tr>
+                          <td colSpan={9} className="px-4 py-8 text-center text-gray-400 text-xs italic">
+                            No daily logs matched the selected filter criteria.
+                          </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      ) : (
+                        filteredLogs.map((l) => {
+                          const m = machinery.find((mac) => mac.id === l.machineryId);
+                          return (
+                            <tr key={l.id} className="table-row">
+                              <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{l.logNo}</td>
+                              <td className="px-4 py-3 text-gray-700 text-xs font-mono whitespace-nowrap">{l.date}</td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                {l.shift === "Day" ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60">
+                                    <Icon name="light_mode" className="text-[12px]" /> Day
+                                  </span>
+                                ) : l.shift === "Night" ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                                    <Icon name="dark_mode" className="text-[12px]" /> Night
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 text-[11px]">—</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 font-medium text-gray-900 text-xs">
+                                <span className="font-bold text-blue-700 font-mono mr-1.5">{m?.assetCode || "—"}</span>
+                                <span>{m ? getMachineryDisplayName(m) : l.machineryId}</span>
+                              </td>
+                              <td className="px-4 py-3 font-mono text-right text-gray-600 text-xs">{fmt(l.openingReading)}</td>
+                              <td className="px-4 py-3 font-mono text-right text-gray-600 text-xs">{fmt(l.closingReading)}</td>
+                              <td className="px-4 py-3 font-mono font-bold text-right text-gray-900 text-xs">{fmt(l.totalKmHours)} {m?.meterType}</td>
+                              <td className="px-4 py-3 font-mono text-right text-gray-600 text-xs">{l.workingHours || "—"}</td>
+                              <td className="px-4 py-3 text-gray-700 text-xs">{l.operatorName || "—"}</td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                    {filteredLogs.length > 0 && (
+                      <tfoot className="border-t-2 border-slate-300 bg-slate-50 font-semibold text-xs text-slate-800">
+                        <tr>
+                          <td colSpan={6} className="px-4 py-2.5 font-bold uppercase tracking-wider text-right">Total Run &amp; Hours:</td>
+                          <td className="px-4 py-2.5 font-mono text-right text-blue-700 font-bold">{totalRun.toFixed(1)}</td>
+                          <td className="px-4 py-2.5 font-mono text-right text-slate-800 font-bold">{totalWork.toFixed(1)}</td>
+                          <td className="px-4 py-2.5"></td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* REPORT 3: DAILY THEORETICAL FUEL CONSUMPTION & BALANCE LEDGER */}
             {activeReportKey === "fuel-consumption" && (
@@ -1196,202 +1652,279 @@ export default function ReportsPage() {
             )}
 
             {/* REPORT 6: PROJECT-WISE FUEL */}
-            {activeReportKey === "project-fuel" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="table-head">
-                      <th className="px-4 py-3">Project Code</th>
-                      <th className="px-4 py-3">Project Name</th>
-                      <th className="px-4 py-3">Active Sites</th>
-                      <th className="px-4 py-3">Assigned Machines</th>
-                      <th className="px-4 py-3">Total Litres Consumed</th>
-                      <th className="px-4 py-3">Total Fuel Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {projects.map((p) => {
-                      const pSites = sites.filter((s) => s.projectId === p.id);
-                      const pMachs = machinery.filter((m) => m.currentProjectId === p.id || m.projectId === p.id);
-                      const machIds = pMachs.map((m) => m.id);
-                      const pFuels = fuels.filter((f) => f.projectId === p.id || machIds.includes(f.machineryId));
-                      const totalL = pFuels.reduce((s, f) => s + f.quantityLitres, 0);
-                      const totalC = pFuels.reduce((s, f) => s + f.amount, 0);
-
-                      return (
-                        <tr key={p.id} className="table-row">
-                          <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{p.code}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900 text-xs">{p.name}</td>
-                          <td className="px-4 py-3 font-mono text-gray-700 text-xs">{pSites.length} Sites</td>
-                          <td className="px-4 py-3 font-mono text-gray-700 text-xs">{pMachs.length} Units</td>
-                          <td className="px-4 py-3 font-mono font-semibold text-gray-900 text-xs">{totalL.toLocaleString()} L</td>
-                          <td className="px-4 py-3 font-mono font-bold text-emerald-600 text-xs">{money(totalC)}</td>
+            {activeReportKey === "project-fuel" && (() => {
+              const targetProjects = projects.filter((p) => filterProject === "all" || p.id === filterProject);
+              return (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="table-head">
+                        <th className="px-4 py-3">Project Code</th>
+                        <th className="px-4 py-3">Project Name</th>
+                        <th className="px-4 py-3">Active Sites</th>
+                        <th className="px-4 py-3">Assigned Machines</th>
+                        <th className="px-4 py-3">Total Litres Consumed</th>
+                        <th className="px-4 py-3">Total Fuel Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {targetProjects.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-8 text-center text-gray-400 text-xs italic">
+                            No projects matched the selected filter criteria.
+                          </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      ) : (
+                        targetProjects.map((p) => {
+                          const pSites = sites.filter((s) => s.projectId === p.id);
+                          const pMachs = machinery.filter((m) => m.currentProjectId === p.id || m.projectId === p.id);
+                          const machIds = pMachs.map((m) => m.id);
+                          const pFuels = fuels.filter((f) => {
+                            if (f.status !== "confirmed") return false;
+                            if (f.projectId !== p.id && !machIds.includes(f.machineryId)) return false;
+                            if (filterSite !== "all" && f.siteId !== filterSite) return false;
+                            if (startDate && f.issueDate < startDate) return false;
+                            if (endDate && f.issueDate > endDate) return false;
+                            return true;
+                          });
+                          const totalL = pFuels.reduce((s, f) => s + f.quantityLitres, 0);
+                          const totalC = pFuels.reduce((s, f) => s + f.amount, 0);
+
+                          return (
+                            <tr key={p.id} className="table-row">
+                              <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{p.code}</td>
+                              <td className="px-4 py-3 font-medium text-gray-900 text-xs">{p.name}</td>
+                              <td className="px-4 py-3 font-mono text-gray-700 text-xs">{pSites.length} Sites</td>
+                              <td className="px-4 py-3 font-mono text-gray-700 text-xs">{pMachs.length} Units</td>
+                              <td className="px-4 py-3 font-mono font-semibold text-gray-900 text-xs">{totalL.toLocaleString()} L</td>
+                              <td className="px-4 py-3 font-mono font-bold text-emerald-600 text-xs">{money(totalC)}</td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* REPORT 7: BREAKDOWN ANALYSIS */}
-            {activeReportKey === "breakdowns" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="table-head">
-                      <th className="px-4 py-3">Incident No</th>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">Machine</th>
-                      <th className="px-4 py-3">Problem Description</th>
-                      <th className="px-4 py-3">Priority</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Downtime</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {breakdowns.map((b) => {
-                      const m = machinery.find((mac) => mac.id === b.machineryId);
-                      return (
-                        <tr key={b.id} className="table-row">
-                          <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{b.breakdownNo}</td>
-                          <td className="px-4 py-3 text-gray-700 text-xs">{b.breakdownDate}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900 text-xs">{m?.assetCode}</td>
-                          <td className="px-4 py-3 text-gray-700 text-xs">{b.problemDescription}</td>
-                          <td className="px-4 py-3">
-                            <StatusPill tone={b.priority === "critical" ? "red" : "amber"}>{b.priority}</StatusPill>
+            {activeReportKey === "breakdowns" && (() => {
+              const targetBreakdowns = breakdowns.filter((b) => {
+                if (filterMachine !== "all" && b.machineryId !== filterMachine) return false;
+                if (filterProject !== "all" && b.projectId !== filterProject) return false;
+                if (filterSite !== "all" && b.siteId !== filterSite) return false;
+                if (startDate && b.breakdownDate < startDate) return false;
+                if (endDate && b.breakdownDate > endDate) return false;
+                return true;
+              });
+              return (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="table-head">
+                        <th className="px-4 py-3">Incident No</th>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3">Machine</th>
+                        <th className="px-4 py-3">Problem Description</th>
+                        <th className="px-4 py-3">Priority</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Downtime</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {targetBreakdowns.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-8 text-center text-gray-400 text-xs italic">
+                            No breakdown records matched the selected filter criteria.
                           </td>
-                          <td className="px-4 py-3">
-                            <StatusPill tone={b.status === "completed" ? "green" : "red"}>{b.status}</StatusPill>
-                          </td>
-                          <td className="px-4 py-3 font-mono text-gray-700 text-xs">{b.downtimeHours || 0} hrs</td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      ) : (
+                        targetBreakdowns.map((b) => {
+                          const m = machinery.find((mac) => mac.id === b.machineryId);
+                          return (
+                            <tr key={b.id} className="table-row">
+                              <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{b.breakdownNo}</td>
+                              <td className="px-4 py-3 text-gray-700 text-xs font-mono">{b.breakdownDate}</td>
+                              <td className="px-4 py-3 font-medium text-gray-900 text-xs">
+                                <span className="font-bold text-blue-700 font-mono mr-1.5">{m?.assetCode || "—"}</span>
+                                <span>{m ? getMachineryDisplayName(m) : b.machineryId}</span>
+                              </td>
+                              <td className="px-4 py-3 text-gray-700 text-xs">{b.problemDescription}</td>
+                              <td className="px-4 py-3">
+                                <StatusPill tone={b.priority === "critical" ? "red" : "amber"}>{b.priority}</StatusPill>
+                              </td>
+                              <td className="px-4 py-3">
+                                <StatusPill tone={b.status === "completed" ? "green" : "red"}>{b.status}</StatusPill>
+                              </td>
+                              <td className="px-4 py-3 font-mono text-gray-700 text-xs">{b.downtimeHours || 0} hrs</td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* REPORT 8: MAINTENANCE COST SUMMARY */}
-            {activeReportKey === "maintenance-cost" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="table-head">
-                      <th className="px-4 py-3">Mnt No</th>
-                      <th className="px-4 py-3">Date</th>
-                      <th className="px-4 py-3">Machine</th>
-                      <th className="px-4 py-3">Type</th>
-                      <th className="px-4 py-3">Parts Cost</th>
-                      <th className="px-4 py-3">Labour Cost</th>
-                      <th className="px-4 py-3">Actual Total</th>
-                      <th className="px-4 py-3">Vendor</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {maintenances.map((mnt) => {
-                      const m = machinery.find((mac) => mac.id === mnt.machineryId);
-                      const v = vendors.find((vnd) => vnd.id === mnt.vendorId);
-                      return (
-                        <tr key={mnt.id} className="table-row">
-                          <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{mnt.maintenanceNo}</td>
-                          <td className="px-4 py-3 text-gray-700 text-xs">{mnt.serviceDate}</td>
-                          <td className="px-4 py-3 font-medium text-gray-900 text-xs">{m?.assetCode}</td>
-                          <td className="px-4 py-3 capitalize text-gray-600 text-xs">{mnt.maintenanceType}</td>
-                          <td className="px-4 py-3 font-mono text-gray-700 text-xs">{money(mnt.partsCost)}</td>
-                          <td className="px-4 py-3 font-mono text-gray-700 text-xs">{money(mnt.labourCost)}</td>
-                          <td className="px-4 py-3 font-mono font-bold text-emerald-600 text-xs">{money(mnt.actualCost)}</td>
-                          <td className="px-4 py-3 text-gray-700 text-xs">{v?.name || "Internal"}</td>
+            {activeReportKey === "maintenance-cost" && (() => {
+              const targetMaintenances = maintenances.filter((mnt) => {
+                if (filterMachine !== "all" && mnt.machineryId !== filterMachine) return false;
+                const m = machinery.find((mac) => mac.id === mnt.machineryId);
+                if (filterProject !== "all" && m?.currentProjectId !== filterProject && m?.projectId !== filterProject) return false;
+                if (filterSite !== "all" && m?.currentSiteId !== filterSite) return false;
+                if (startDate && mnt.serviceDate < startDate) return false;
+                if (endDate && mnt.serviceDate > endDate) return false;
+                return true;
+              });
+              return (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="table-head">
+                        <th className="px-4 py-3">Mnt No</th>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3">Machine</th>
+                        <th className="px-4 py-3">Type</th>
+                        <th className="px-4 py-3 text-right">Parts Cost</th>
+                        <th className="px-4 py-3 text-right">Labour Cost</th>
+                        <th className="px-4 py-3 text-right">Actual Total</th>
+                        <th className="px-4 py-3">Vendor</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {targetMaintenances.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-xs italic">
+                            No maintenance service records matched the selected filter criteria.
+                          </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      ) : (
+                        targetMaintenances.map((mnt) => {
+                          const m = machinery.find((mac) => mac.id === mnt.machineryId);
+                          const v = vendors.find((vnd) => vnd.id === mnt.vendorId);
+                          return (
+                            <tr key={mnt.id} className="table-row">
+                              <td className="px-4 py-3 font-mono font-semibold text-blue-600 text-xs">{mnt.maintenanceNo}</td>
+                              <td className="px-4 py-3 text-gray-700 text-xs font-mono">{mnt.serviceDate}</td>
+                              <td className="px-4 py-3 font-medium text-gray-900 text-xs">
+                                <span className="font-bold text-blue-700 font-mono mr-1.5">{m?.assetCode || "—"}</span>
+                                <span>{m ? getMachineryDisplayName(m) : mnt.machineryId}</span>
+                              </td>
+                              <td className="px-4 py-3 capitalize text-gray-600 text-xs">{mnt.maintenanceType}</td>
+                              <td className="px-4 py-3 font-mono text-gray-700 text-right text-xs">{money(mnt.partsCost)}</td>
+                              <td className="px-4 py-3 font-mono text-gray-700 text-right text-xs">{money(mnt.labourCost)}</td>
+                              <td className="px-4 py-3 font-mono font-bold text-emerald-600 text-right text-xs">{money(mnt.actualCost)}</td>
+                              <td className="px-4 py-3 text-gray-700 text-xs">{v?.name || "Internal"}</td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
 
             {/* REPORT 10: COMPLIANCE EXPIRY SCHEDULE */}
-            {activeReportKey === "compliance-expiry" && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="table-head">
-                      <th className="px-3.5 py-2.5">Asset Code</th>
-                      <th className="px-3.5 py-2.5">Machinery</th>
-                      <th className="px-3.5 py-2.5">Ownership</th>
-                      <th className="px-3.5 py-2.5">Road Tax</th>
-                      <th className="px-3.5 py-2.5">Fitness</th>
-                      <th className="px-3.5 py-2.5">Insurance</th>
-                      <th className="px-3.5 py-2.5">PUC</th>
-                      <th className="px-3.5 py-2.5">Permit</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {machinery.map((m) => {
-                      const now = new Date();
-                      const renderDocStatus = (dateStr?: string | null, docNo?: string | null) => {
-                        if (!dateStr) return <span className="text-gray-400 font-mono text-[11px]">—</span>;
-                        const exp = new Date(dateStr);
-                        const daysLeft = Math.ceil((exp.getTime() - now.getTime()) / 86400000);
-                        const isExpired = daysLeft < 0;
-                        const isSoon = daysLeft >= 0 && daysLeft <= 30;
-
-                        return (
-                          <div>
-                            <span
-                              className={`font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded ${
-                                isExpired
-                                  ? "bg-rose-50 text-rose-700 border border-rose-200"
-                                  : isSoon
-                                  ? "bg-amber-50 text-amber-700 border border-amber-200"
-                                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              }`}
-                            >
-                              {dateStr}
-                            </span>
-                            <div className="text-[10px] text-gray-500 mt-0.5">
-                              {isExpired ? (
-                                <span className="text-rose-600 font-medium">Expired {Math.abs(daysLeft)}d ago</span>
-                              ) : isSoon ? (
-                                <span className="text-amber-600 font-medium">{daysLeft}d remaining</span>
-                              ) : (
-                                <span className="text-gray-400">{daysLeft}d left</span>
-                              )}
-                              {docNo && <span className="font-mono text-gray-500 ml-1">({docNo})</span>}
-                            </div>
-                          </div>
-                        );
-                      };
-
-                      return (
-                        <tr key={m.id} className="table-row">
-                          <td className="px-3.5 py-2.5 font-mono font-bold text-blue-600 whitespace-nowrap">{m.assetCode}</td>
-                          <td className="px-3.5 py-2.5">
-                            <p className="font-semibold text-gray-900">{getMachineryDisplayName(m)}</p>
-                            <p className="text-[11px] text-gray-500">{m.category ? m.category.toUpperCase() : ""}</p>
+            {activeReportKey === "compliance-expiry" && (() => {
+              const targetMachines = machinery.filter((m) => {
+                if (filterMachine !== "all" && m.id !== filterMachine) return false;
+                if (filterProject !== "all" && m.currentProjectId !== filterProject && m.projectId !== filterProject) return false;
+                if (filterSite !== "all" && m.currentSiteId !== filterSite) return false;
+                return true;
+              });
+              return (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="table-head">
+                        <th className="px-3.5 py-2.5">Asset Code</th>
+                        <th className="px-3.5 py-2.5">Machinery</th>
+                        <th className="px-3.5 py-2.5">Ownership</th>
+                        <th className="px-3.5 py-2.5">Road Tax</th>
+                        <th className="px-3.5 py-2.5">Fitness</th>
+                        <th className="px-3.5 py-2.5">Insurance</th>
+                        <th className="px-3.5 py-2.5">PUC</th>
+                        <th className="px-3.5 py-2.5">Permit</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {targetMachines.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="px-4 py-8 text-center text-gray-400 text-xs italic">
+                            No equipment records matched the selected compliance filter criteria.
                           </td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                              m.ownership === "rental"
-                                ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                : "bg-blue-50 text-blue-700 border border-blue-200"
-                            }`}>
-                              {m.ownership === "rental" ? "Rental" : "Own"}
-                            </span>
-                          </td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.roadTaxExpiry, m.roadTaxDocNo)}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.fitnessExpiry, m.fitnessDocNo)}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.insuranceExpiry, m.insuranceDocNo)}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.pucExpiry, m.pucDocNo)}</td>
-                          <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.permitExpiry, m.permitDocNo)}</td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      ) : (
+                        targetMachines.map((m) => {
+                          const now = new Date();
+                          const renderDocStatus = (dateStr?: string | null, docNo?: string | null) => {
+                            if (!dateStr) return <span className="text-gray-400 font-mono text-[11px]">—</span>;
+                            const exp = new Date(dateStr);
+                            const daysLeft = Math.ceil((exp.getTime() - now.getTime()) / 86400000);
+                            const isExpired = daysLeft < 0;
+                            const isSoon = daysLeft >= 0 && daysLeft <= 30;
+
+                            return (
+                              <div>
+                                <span
+                                  className={`font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded ${
+                                    isExpired
+                                      ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                      : isSoon
+                                      ? "bg-amber-50 text-amber-700 border border-amber-200"
+                                      : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  }`}
+                                >
+                                  {dateStr}
+                                </span>
+                                <div className="text-[10px] text-gray-500 mt-0.5">
+                                  {isExpired ? (
+                                    <span className="text-rose-600 font-medium">Expired {Math.abs(daysLeft)}d ago</span>
+                                  ) : isSoon ? (
+                                    <span className="text-amber-600 font-medium">{daysLeft}d remaining</span>
+                                  ) : (
+                                    <span className="text-gray-400">{daysLeft}d left</span>
+                                  )}
+                                  {docNo && <span className="font-mono text-gray-500 ml-1">({docNo})</span>}
+                                </div>
+                              </div>
+                            );
+                          };
+
+                          return (
+                            <tr key={m.id} className="table-row">
+                              <td className="px-3.5 py-2.5 font-mono font-bold text-blue-600 whitespace-nowrap">{m.assetCode}</td>
+                              <td className="px-3.5 py-2.5">
+                                <p className="font-semibold text-gray-900">{getMachineryDisplayName(m)}</p>
+                                <p className="text-[11px] text-gray-500">{m.category ? m.category.toUpperCase() : ""}</p>
+                              </td>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                                  m.ownership === "rental"
+                                    ? "bg-purple-50 text-purple-700 border border-purple-200"
+                                    : "bg-blue-50 text-blue-700 border border-blue-200"
+                                }`}>
+                                  {m.ownership === "rental" ? "Rental" : "Own"}
+                                </span>
+                              </td>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.roadTaxExpiry, m.roadTaxDocNo)}</td>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.fitnessExpiry, m.fitnessDocNo)}</td>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.insuranceExpiry, m.insuranceDocNo)}</td>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.pucExpiry, m.pucDocNo)}</td>
+                              <td className="px-3.5 py-2.5 whitespace-nowrap">{renderDocStatus(m.permitExpiry, m.permitDocNo)}</td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

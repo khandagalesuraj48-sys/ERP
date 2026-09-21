@@ -43,14 +43,56 @@ export default function LogBookPage() {
   const [fuelIssues, setFuelIssues] = useState<FuelIssue[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters for Daily Logs Table (Requirement 11)
+  // Filters for Daily Logs Table (Requirement 9)
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [quickDatePreset, setQuickDatePreset] = useState("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [selectedShift, setSelectedShift] = useState<"all" | "Day" | "Night">("all");
   const [selectedMachineId, setSelectedMachineId] = useState("all");
   const [selectedProjectId, setSelectedProjectId] = useState("all");
   const [selectedSiteId, setSelectedSiteId] = useState("all");
   const [selectedEngineId, setSelectedEngineId] = useState("all");
   const [selectedMeterType, setSelectedMeterType] = useState<"all" | MeterType>("all");
+
+  const handleQuickDateChange = (preset: string) => {
+    setQuickDatePreset(preset);
+    if (preset === "all" || preset === "custom") {
+      if (preset === "all") {
+        setFromDate("");
+        setToDate("");
+      }
+      return;
+    }
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    if (preset === "today") {
+      setFromDate(todayStr);
+      setToDate(todayStr);
+    } else if (preset === "yesterday") {
+      const y = new Date(now);
+      y.setDate(y.getDate() - 1);
+      const yStr = y.toISOString().slice(0, 10);
+      setFromDate(yStr);
+      setToDate(yStr);
+    } else if (preset === "this_week") {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const mon = new Date(now);
+      mon.setDate(diff);
+      setFromDate(mon.toISOString().slice(0, 10));
+      setToDate(todayStr);
+    } else if (preset === "this_month") {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      setFromDate(start.toISOString().slice(0, 10));
+      setToDate(todayStr);
+    } else if (preset === "last_month") {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0);
+      setFromDate(start.toISOString().slice(0, 10));
+      setToDate(end.toISOString().slice(0, 10));
+    }
+  };
 
   // Filters for Average & Fuel Efficiency Report
   const [avgFromDate, setAvgFromDate] = useState<string>(() => {
@@ -140,12 +182,22 @@ export default function LogBookPage() {
     return allEngines.filter((e) => e.machineryId === selectedMachineId);
   }, [allEngines, selectedMachineId]);
 
+  // Cascading sites for filter dropdown
+  const filteredSitesForFilter = useMemo(() => {
+    if (selectedProjectId === "all") return sites;
+    return sites.filter((s) => s.projectId === selectedProjectId);
+  }, [sites, selectedProjectId]);
+
   // Filtered Logs
   const filteredLogs = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
     return logs.filter((l) => {
-      // Date filter
-      if (selectedDate && l.date !== selectedDate) return false;
+      // Date range filter
+      if (fromDate && l.date < fromDate) return false;
+      if (toDate && l.date > toDate) return false;
+
+      // Shift filter
+      if (selectedShift !== "all" && l.shift !== selectedShift) return false;
 
       // Machinery filter
       if (selectedMachineId !== "all" && l.machineryId !== selectedMachineId) return false;
@@ -186,7 +238,9 @@ export default function LogBookPage() {
   }, [
     logs,
     searchTerm,
-    selectedDate,
+    fromDate,
+    toDate,
+    selectedShift,
     selectedMachineId,
     selectedProjectId,
     selectedSiteId,
@@ -243,13 +297,41 @@ export default function LogBookPage() {
         <>
           {/* FILTER STRIP (SOLID WHITE ENTERPRISE CARD) */}
           <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <Icon name="filter_alt" size={15} className="text-blue-600" />
                 Filter Log Entries
               </span>
+              
+              {/* Quick Date Range Presets */}
+              <div className="inline-flex items-center p-0.5 bg-slate-100/80 rounded-lg border border-slate-200/70 text-[11px]">
+                {[
+                  { key: "all", label: "All Dates" },
+                  { key: "today", label: "Today" },
+                  { key: "yesterday", label: "Yesterday" },
+                  { key: "this_week", label: "This Week" },
+                  { key: "this_month", label: "This Month" },
+                  { key: "last_month", label: "Last Month" },
+                ].map((preset) => (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    onClick={() => handleQuickDateChange(preset.key)}
+                    className={`px-2.5 py-1 rounded-md font-semibold transition-all ${
+                      quickDatePreset === preset.key
+                        ? "bg-white text-blue-700 shadow-xs border border-slate-200"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
               {(searchTerm ||
-                selectedDate ||
+                fromDate ||
+                toDate ||
+                selectedShift !== "all" ||
                 selectedMachineId !== "all" ||
                 selectedProjectId !== "all" ||
                 selectedSiteId !== "all" ||
@@ -259,7 +341,10 @@ export default function LogBookPage() {
                   type="button"
                   onClick={() => {
                     setSearchTerm("");
-                    setSelectedDate("");
+                    setQuickDatePreset("all");
+                    setFromDate("");
+                    setToDate("");
+                    setSelectedShift("all");
                     setSelectedMachineId("all");
                     setSelectedProjectId("all");
                     setSelectedSiteId("all");
@@ -273,39 +358,73 @@ export default function LogBookPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2.5">
               {/* Search */}
               <div className="space-y-1 sm:col-span-2">
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase">Search</label>
                 <input
                   type="text"
-                  placeholder="Search Log #, machine, operator..."
+                  placeholder="Log #, machine, op..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 />
               </div>
 
-              {/* Date Filter */}
+              {/* From Date */}
               <div className="space-y-1">
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase">From Date</label>
                 <input
                   type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                  value={fromDate}
+                  onChange={(e) => {
+                    setFromDate(e.target.value);
+                    setQuickDatePreset("custom");
+                  }}
+                  className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 />
+              </div>
+
+              {/* To Date */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase">To Date</label>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => {
+                    setToDate(e.target.value);
+                    setQuickDatePreset("custom");
+                  }}
+                  className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                />
+              </div>
+
+              {/* Shift Filter (Requirement 9) */}
+              <div className="space-y-1">
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase">Shift</label>
+                <select
+                  value={selectedShift}
+                  onChange={(e) => setSelectedShift(e.target.value as any)}
+                  className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                >
+                  <option value="all">All Shifts</option>
+                  <option value="Day">Day</option>
+                  <option value="Night">Night</option>
+                </select>
               </div>
 
               {/* Machinery Filter */}
               <div className="space-y-1">
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase">Machinery</label>
                 <select
                   value={selectedMachineId}
                   onChange={(e) => {
                     setSelectedMachineId(e.target.value);
                     setSelectedEngineId("all");
                   }}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                  className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
-                  <option value="all">All Machinery ({machinery.length})</option>
+                  <option value="all">All ({machinery.length})</option>
                   {machinery.map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.registrationNo ? `${m.machineryName} — ${m.registrationNo}` : m.machineryName}
@@ -316,10 +435,14 @@ export default function LogBookPage() {
 
               {/* Project Filter */}
               <div className="space-y-1">
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase">Project</label>
                 <select
                   value={selectedProjectId}
-                  onChange={(e) => setSelectedProjectId(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                  onChange={(e) => {
+                    setSelectedProjectId(e.target.value);
+                    setSelectedSiteId("all");
+                  }}
+                  className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Projects</option>
                   {projects.map((p) => (
@@ -330,32 +453,20 @@ export default function LogBookPage() {
                 </select>
               </div>
 
-              {/* Engine Filter */}
+              {/* Cascading Site Filter */}
               <div className="space-y-1">
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase">Site</label>
                 <select
-                  value={selectedEngineId}
-                  onChange={(e) => setSelectedEngineId(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
+                  value={selectedSiteId}
+                  onChange={(e) => setSelectedSiteId(e.target.value)}
+                  className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
-                  <option value="all">All Engines</option>
-                  {filteredEnginesForFilter.map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.engineName} ({e.meterType})
+                  <option value="all">All Sites ({filteredSitesForFilter.length})</option>
+                  {filteredSitesForFilter.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
                     </option>
                   ))}
-                </select>
-              </div>
-
-              {/* Meter Type Filter */}
-              <div className="space-y-1">
-                <select
-                  value={selectedMeterType}
-                  onChange={(e) => setSelectedMeterType(e.target.value as any)}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
-                >
-                  <option value="all">All Meters</option>
-                  <option value="KM">KM Only</option>
-                  <option value="HOUR">Hour Only</option>
                 </select>
               </div>
             </div>
@@ -375,7 +486,7 @@ export default function LogBookPage() {
               icon="menu_book"
               title="No Log Book Entries Found"
               description={
-                selectedDate || selectedMachineId !== "all" || searchTerm
+                fromDate || toDate || selectedShift !== "all" || selectedMachineId !== "all" || searchTerm
                   ? "No daily log records matched your current filter criteria."
                   : "No daily running logs have been recorded yet. Click below to create your first equipment shift log."
               }
@@ -390,6 +501,7 @@ export default function LogBookPage() {
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
                       <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Shift</th>
                       <th className="px-4 py-3">Log No</th>
                       <th className="px-4 py-3">Equipment</th>
                       <th className="px-4 py-3">Reg. / Name</th>
@@ -438,6 +550,23 @@ export default function LogBookPage() {
                           {/* Date */}
                           <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap">
                             {l.date}
+                          </td>
+
+                          {/* Shift */}
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {l.shift === "Day" ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60">
+                                <span className="material-symbols-outlined text-[12px]">light_mode</span>
+                                Day
+                              </span>
+                            ) : l.shift === "Night" ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                                <span className="material-symbols-outlined text-[12px]">dark_mode</span>
+                                Night
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-[11px]">—</span>
+                            )}
                           </td>
 
                           {/* Log No */}
