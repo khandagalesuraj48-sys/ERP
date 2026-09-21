@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getMaintenanceRecords,
   createMaintenanceRecord,
@@ -250,7 +251,7 @@ function MaintenanceContent() {
   });
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Machinery Maintenance & Servicing"
         subtitle="Preventive maintenance, periodic servicing, workshop repairs, and parts & labour costs."
@@ -694,7 +695,7 @@ function MaintenanceContent() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageTransition>
   );
 }
 

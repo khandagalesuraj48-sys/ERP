@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getMachinery,
   getMachineryById,
@@ -520,7 +521,7 @@ export function LogBookTransactionForm({
   const isViewMode = mode === "view";
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 pb-20 lg:pb-10">
+    <PageTransition className="max-w-5xl mx-auto space-y-5 pb-20 lg:pb-10">
       {/* 1. TOP TRANSACTION HEADER (Clean Light Glass Style) */}
       <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 lg:relative lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:border-none lg:backdrop-blur-none">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1403,6 +1404,6 @@ export function LogBookTransactionForm({
           </div>
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }

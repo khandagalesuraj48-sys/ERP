@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import { getVendors, createVendor, updateVendor } from "@/lib/data/repository";
 import type { Vendor, VendorType } from "@/lib/types";
 
@@ -136,7 +137,7 @@ export default function VendorsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Vendors & Service Providers"
         subtitle="Manage authorized OEM dealers, mechanical workshops, fuel agencies, and parts suppliers."
@@ -396,6 +397,6 @@ export default function VendorsPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageTransition>
   );
 }

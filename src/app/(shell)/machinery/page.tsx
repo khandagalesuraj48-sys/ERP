@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { MachineryModal } from "@/components/machinery/MachineryModal";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import { getMachinery, getProjects, getSites, archiveMachinery } from "@/lib/data/repository";
 import { fmt } from "@/lib/utils";
 import type { Machinery, Project, Site, MeterType } from "@/lib/types";
@@ -99,7 +100,7 @@ export default function MachineryMasterPage() {
   });
 
   return (
-    <div className="space-y-4">
+    <PageTransition className="space-y-4">
       <PageHeader
         title="Machinery"
         subtitle="Central registry of construction plant, earthmoving equipment, haulage trucks, and utility machinery."
@@ -452,6 +453,6 @@ export default function MachineryMasterPage() {
         onSuccess={fetchMachinery}
         machineryToEdit={editingMachine}
       />
-    </div>
+    </PageTransition>
   );
 }

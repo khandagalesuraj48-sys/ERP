@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getFuelIssues,
   createFuelIssue,
@@ -319,7 +320,7 @@ export default function FuelIssuePage() {
   });
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Direct Machine Fuel Issue"
         subtitle="Direct fuel issuance to construction equipment & haulage trucks. (Zero stock/inward holding)."
@@ -977,6 +978,6 @@ export default function FuelIssuePage() {
           }
         }}
       />
-    </div>
+    </PageTransition>
   );
 }

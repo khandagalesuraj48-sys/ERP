@@ -10,6 +10,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getAttachments,
   createAttachment,
@@ -212,7 +213,7 @@ function ComplianceContent() {
   };
 
   return (
-    <>
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Compliance &amp; Statutory Control"
         subtitle="Universal construction statutory compliance: Road Tax, Fitness, Insurance, PUC, and Permits with active expiry alerts."
@@ -646,7 +647,7 @@ function ComplianceContent() {
           </div>
         </form>
       </Modal>
-    </>
+    </PageTransition>
   );
 }
 

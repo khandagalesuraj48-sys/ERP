@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { QuickCreateModal } from "@/components/ui/QuickCreateModal";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getAssets,
   createAsset,
@@ -161,7 +162,7 @@ export default function AssetsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Asset Master & Plant Registry"
         subtitle="Capital fixed assets, DG sets, batching plants, weighbridges, and project-to-site relocation tracking."
@@ -613,6 +614,6 @@ export default function AssetsPage() {
           else if (qcType === "vendor") setVendorId(rec.id);
         }}
       />
-    </div>
+    </PageTransition>
   );
 }

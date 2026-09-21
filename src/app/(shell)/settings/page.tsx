@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Icon } from "@/components/ui/Icon";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import { isDatabaseConnected } from "@/lib/data/repository";
 
 export default function SettingsPage() {
@@ -26,7 +27,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <>
+    <PageTransition className="space-y-6">
       <PageHeader
         title="System Settings &amp; Architecture"
         subtitle="ERP environment configuration, database connectivity, Supabase Storage and Enterprise 27-table schema status."
@@ -244,6 +245,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>`}
           </div>
         </div>
       </div>
-    </>
+    </PageTransition>
   );
 }

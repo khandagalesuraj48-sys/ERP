@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getBreakdowns,
   createBreakdown,
@@ -209,7 +210,7 @@ export default function BreakdownsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Breakdowns & Downtime"
         subtitle="Unscheduled breakdown reporting, mechanical triage, downtime tracking, and repair resolution."
@@ -629,6 +630,6 @@ export default function BreakdownsPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageTransition>
   );
 }

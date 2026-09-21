@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getProjects,
   createProject,
@@ -221,7 +222,7 @@ export default function ProjectsAndSitesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Projects & Work Sites"
         subtitle="Manage construction packages, project stretches, batching plants, and physical work sites."
@@ -889,6 +890,6 @@ export default function ProjectsAndSitesPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageTransition>
   );
 }

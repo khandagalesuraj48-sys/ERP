@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { QuickCreateModal } from "@/components/ui/QuickCreateModal";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getProjects,
   getSites,
@@ -587,7 +588,7 @@ export default function StoreAndInventoryPage() {
   }
 
   return (
-    <>
+    <PageTransition className="space-y-6">
       <PageHeader
         title="Store &amp; Inventory Management"
         subtitle="Transactional stock engine, material inward (GRN), store issue slips, transfers, returns, and real-time site stock balances."
@@ -2949,6 +2950,6 @@ export default function StoreAndInventoryPage() {
           }
         }}
       />
-    </>
+    </PageTransition>
   );
 }

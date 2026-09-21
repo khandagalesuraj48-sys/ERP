@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getMachinery,
   getLogBooks,
@@ -790,7 +791,7 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       <div className="print:hidden">
         <PageHeader
           title="Reports & MIS Analytics"
@@ -1403,6 +1404,6 @@ export default function ReportsPage() {
           {...getPrintData()}
         />
       )}
-    </div>
+    </PageTransition>
   );
 }
