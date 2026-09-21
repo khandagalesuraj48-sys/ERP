@@ -29,7 +29,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: "Items", href: "/store/items", icon: "category" },
       { label: "Inward / GRN", href: "/store?tab=inward", icon: "move_to_inbox" },
       { label: "Outward / Issue", href: "/store?tab=outward", icon: "outbox" },
-      { label: "Transfers", href: "/store?tab=transfers", icon: "swap_horiz" },
+      { label: "Stock Transfers", href: "/store?tab=transfers", icon: "swap_horiz" },
       { label: "Returns", href: "/store?tab=returns", icon: "assignment_return" },
       { label: "Stock Ledger", href: "/store?tab=ledger", icon: "receipt_long" },
     ],

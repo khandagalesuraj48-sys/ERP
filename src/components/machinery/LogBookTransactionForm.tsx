@@ -184,7 +184,7 @@ export function LogBookTransactionForm({
     };
   }, [initialLogId, showToast]);
 
-  // Fetch readings, engines, and fuel whenever machinery or date changes in create mode
+  // Fetch readings, engines, and fuel whenever machinery or date changes
   const fetchReadingAndFuelData = useCallback(
     async (machineId: string, date: string) => {
       if (!machineId || !date) return;
@@ -218,7 +218,6 @@ export function LogBookTransactionForm({
           engs.length >= 2;
 
         if (isMulti && engs.length > 0) {
-          // Multi-engine: fetch previous readings for each engine
           const states: EngineReadingState[] = await Promise.all(
             engs.map(async (eng) => {
               const reading = await getLatestLogBookReading(machineId, date, eng.id);
@@ -229,7 +228,7 @@ export function LogBookTransactionForm({
                 standardEfficiency: eng.standardFuelEfficiency ?? null,
                 previousClosing: reading.previousClosingReading,
                 opening: reading.suggestedOpeningReading > 0 ? reading.suggestedOpeningReading.toString() : "",
-                closing: "", // starts empty
+                closing: "",
                 isMeterReset: false,
                 hasPreviousEntry: reading.hasPreviousEntry,
               };
@@ -237,12 +236,11 @@ export function LogBookTransactionForm({
           );
           setEngineReadings(states);
         } else {
-          // Single engine / standard machine reading
           const primaryEngId = engs.length === 1 ? engs[0].id : null;
           const reading = await getLatestLogBookReading(machineId, date, primaryEngId);
           setSinglePreviousClosing(reading.previousClosingReading);
           setSingleOpening(reading.suggestedOpeningReading > 0 ? reading.suggestedOpeningReading.toString() : "");
-          setSingleClosing(""); // Starts empty!
+          setSingleClosing("");
           setSingleHasPrevious(reading.hasPreviousEntry);
         }
       } catch (err: any) {
@@ -275,7 +273,6 @@ export function LogBookTransactionForm({
 
     const machine = machineryList.find((m) => m.id === machineId);
     if (machine) {
-      // Auto-load Project & Site
       if (machine.currentProjectId || machine.projectId) {
         setFormProjectId(machine.currentProjectId || machine.projectId || "");
       }
@@ -316,10 +313,8 @@ export function LogBookTransactionForm({
     if (dieselIssuedLitres == null || dieselIssuedLitres <= 0) return null;
     const meterType = selectedMachine?.meterType || "HOUR";
     if (meterType === "KM") {
-      // KM/L
       return Number((singleTotalRun / dieselIssuedLitres).toFixed(2));
     } else {
-      // L/Hour
       return Number((dieselIssuedLitres / singleTotalRun).toFixed(2));
     }
   }, [singleTotalRun, dieselIssuedLitres, selectedMachine]);
@@ -371,7 +366,7 @@ export function LogBookTransactionForm({
     }
 
     if (isMultiEngine && engineReadings.length > 0) {
-      engineReadings.forEach((eng, idx) => {
+      engineReadings.forEach((eng) => {
         const op = parseFloat(eng.opening);
         const cl = parseFloat(eng.closing);
         if (isNaN(cl)) {
@@ -411,7 +406,6 @@ export function LogBookTransactionForm({
     setSubmitting(true);
     try {
       if (initialLogId) {
-        // Edit Mode: Update single log
         const op = parseFloat(singleOpening) || 0;
         const cl = parseFloat(singleClosing) || 0;
         await updateLogBook(initialLogId, {
@@ -436,13 +430,11 @@ export function LogBookTransactionForm({
 
         showToast(
           "Success",
-          `Log Book entry '${formLogNo}' updated successfully (${saveStatus === "draft" ? "Draft" : "Approved"}).`
+          `Log Book entry '${formLogNo}' saved successfully (${saveStatus === "draft" ? "Draft" : "Approved"}).`
         );
         router.push("/machinery/log-book");
       } else {
-        // Create Mode
         if (isMultiEngine && engineReadings.length > 0) {
-          // Multi-engine: create individual log entry per engine
           for (let i = 0; i < engineReadings.length; i++) {
             const eng = engineReadings[i];
             const op = parseFloat(eng.opening) || 0;
@@ -476,7 +468,6 @@ export function LogBookTransactionForm({
             `Created ${engineReadings.length} engine log entries successfully (${saveStatus === "draft" ? "Draft" : "Approved"}).`
           );
         } else {
-          // Single Engine
           const op = parseFloat(singleOpening) || 0;
           const cl = parseFloat(singleClosing) || 0;
           const primaryEngId = availableEngines.length === 1 ? availableEngines[0].id : null;
@@ -519,9 +510,9 @@ export function LogBookTransactionForm({
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-3 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
-        <p className="text-sm font-medium text-neutral-400">Loading Transaction Engine...</p>
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs font-medium text-slate-500">Loading Transaction Screen...</p>
       </div>
     );
   }
@@ -529,23 +520,23 @@ export function LogBookTransactionForm({
   const isViewMode = mode === "view";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-24 lg:pb-12 animate-in fade-in duration-200">
-      {/* 1. TOP TRANSACTION HEADER (Sticky on Mobile) */}
-      <div className="sticky top-14 z-20 -mx-4 px-4 py-3 bg-neutral-950/85 backdrop-blur-md border-b border-neutral-800/80 lg:relative lg:top-0 lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:border-none lg:backdrop-blur-none">
+    <div className="max-w-5xl mx-auto space-y-5 pb-20 lg:pb-10">
+      {/* 1. TOP TRANSACTION HEADER (Clean Light Glass Style) */}
+      <div className="sticky top-0 z-20 -mx-4 px-4 py-3 bg-white/90 backdrop-blur-md border-b border-slate-200/80 lg:relative lg:mx-0 lg:px-0 lg:py-0 lg:bg-transparent lg:border-none lg:backdrop-blur-none">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
               href="/machinery/log-book"
-              className="p-2 rounded-xl bg-neutral-900/80 border border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+              className="p-2 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-xs"
               title="Back to Log Book"
             >
-              <Icon name="arrow_back" size={20} />
+              <Icon name="arrow_back" size={18} />
             </Link>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                  <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    <Icon name="menu_book" size={18} />
+                <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <span className="p-1 rounded-lg bg-blue-50 text-blue-600 border border-blue-100">
+                    <Icon name="menu_book" size={16} />
                   </span>
                   {isViewMode
                     ? `Equipment Log: ${formLogNo || "Details"}`
@@ -554,15 +545,15 @@ export function LogBookTransactionForm({
                     : "Record Daily Equipment Log"}
                 </h1>
                 {selectedMachine && (
-                  <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-neutral-800 border border-neutral-700 text-neutral-300">
+                  <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
                     {selectedMachine.registrationNo
                       ? selectedMachine.registrationNo
                       : selectedMachine.machineryName}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                Daily operational shift readings, fuel cross-reference & efficiency tracking
+              <p className="text-xs text-slate-500 mt-0.5">
+                Daily operational shift readings, fuel cross-reference &amp; efficiency tracking
               </p>
             </div>
           </div>
@@ -573,16 +564,16 @@ export function LogBookTransactionForm({
               <button
                 type="button"
                 onClick={() => setMode("edit")}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-bold shadow-lg shadow-amber-500/10 transition-all flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5"
               >
-                <Icon name="edit" size={16} />
+                <Icon name="edit" size={15} />
                 Edit Transaction
               </button>
             ) : (
               <>
                 <Link
                   href="/machinery/log-book"
-                  className="px-3.5 py-2 rounded-xl bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-neutral-300 text-xs font-semibold transition-colors"
+                  className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors shadow-xs"
                 >
                   Cancel
                 </Link>
@@ -590,7 +581,7 @@ export function LogBookTransactionForm({
                   type="button"
                   disabled={submitting}
                   onClick={() => handleSave("draft")}
-                  className="px-3.5 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
                 >
                   <Icon name="drafts" size={15} />
                   Save Draft
@@ -599,12 +590,12 @@ export function LogBookTransactionForm({
                   type="button"
                   disabled={submitting}
                   onClick={() => handleSave("approved")}
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-50"
                 >
                   {submitting ? (
-                    <div className="w-4 h-4 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Icon name="check_circle" size={16} />
+                    <Icon name="check_circle" size={15} />
                   )}
                   Save &amp; Close
                 </button>
@@ -614,21 +605,21 @@ export function LogBookTransactionForm({
         </div>
       </div>
 
-      {/* 2. TRANSACTION INFORMATION CARD (COMPACT ERP GRID) */}
-      <div className="p-5 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-neutral-800/60 pb-3">
+      {/* 2. TRANSACTION INFORMATION CARD (SOLID WHITE ENTERPRISE STYLE) */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wider text-neutral-300">
+            <span className="w-2 h-2 rounded-full bg-blue-600" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
               Transaction Details
             </span>
           </div>
           {formLogNo ? (
-            <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-neutral-950 border border-neutral-800 text-amber-400">
+            <span className="text-xs font-mono px-2.5 py-0.5 rounded-md bg-slate-50 border border-slate-200 text-blue-700 font-semibold">
               {formLogNo}
             </span>
           ) : (
-            <span className="text-xs text-neutral-500 italic">
+            <span className="text-xs text-slate-400 italic">
               Log # auto-assigned upon date &amp; equipment selection
             </span>
           )}
@@ -636,35 +627,35 @@ export function LogBookTransactionForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* STEP 1: DATE (MUST START BLANK) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300 flex items-center justify-between">
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
               <span>
-                1. Shift Date <span className="text-amber-400">*</span>
+                1. Shift Date <span className="text-red-500">*</span>
               </span>
-              {!formDate && <span className="text-[10px] text-amber-400/80">Required</span>}
+              {!formDate && <span className="text-[10px] text-amber-600 font-medium">Required</span>}
             </label>
             <input
               type="date"
               disabled={isViewMode}
               value={formDate}
               onChange={(e) => handleDateChange(e.target.value)}
-              className={`w-full px-3 py-2 bg-neutral-950 border rounded-xl text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all ${
+              className={`w-full px-3 py-1.5 bg-white border rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
                 errors.date
-                  ? "border-red-500/80 bg-red-950/10 focus:ring-red-500/30"
-                  : "border-neutral-800 hover:border-neutral-700"
+                  ? "border-red-400 bg-red-50/20"
+                  : "border-slate-300 hover:border-slate-400"
               }`}
             />
-            {errors.date && <p className="text-[11px] text-red-400">{errors.date}</p>}
+            {errors.date && <p className="text-[11px] text-red-500">{errors.date}</p>}
           </div>
 
           {/* STEP 2: MACHINERY SELECTION */}
-          <div className="space-y-1.5 sm:col-span-1 lg:col-span-2">
-            <label className="block text-xs font-semibold text-neutral-300 flex items-center justify-between">
+          <div className="space-y-1 sm:col-span-1 lg:col-span-2">
+            <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
               <span>
-                2. Select Equipment / Machinery <span className="text-amber-400">*</span>
+                2. Select Equipment / Machinery <span className="text-red-500">*</span>
               </span>
               {selectedMachine && (
-                <span className="text-[10px] font-mono text-neutral-400">
+                <span className="text-[10px] font-mono text-slate-500">
                   {selectedMachine.assetCode}
                 </span>
               )}
@@ -673,10 +664,10 @@ export function LogBookTransactionForm({
               disabled={isViewMode || Boolean(initialLogId)}
               value={formMachineryId}
               onChange={(e) => handleMachineryChange(e.target.value)}
-              className={`w-full px-3 py-2 bg-neutral-950 border rounded-xl text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all ${
+              className={`w-full px-3 py-1.5 bg-white border rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
                 errors.machineryId
-                  ? "border-red-500/80 bg-red-950/10 focus:ring-red-500/30"
-                  : "border-neutral-800 hover:border-neutral-700"
+                  ? "border-red-400 bg-red-50/20"
+                  : "border-slate-300 hover:border-slate-400"
               }`}
             >
               <option value="">-- Select Machinery / Vehicle --</option>
@@ -684,47 +675,45 @@ export function LogBookTransactionForm({
                 <option key={m.id} value={m.id}>
                   {m.registrationNo
                     ? `${m.machineryName} — ${m.registrationNo} (${m.assetCode})`
-                    : `${m.machineryName} (Unregistered / Non-Road) (${m.assetCode})`}
+                    : `${m.machineryName} (Unregistered) (${m.assetCode})`}
                 </option>
               ))}
             </select>
             {errors.machineryId && (
-              <p className="text-[11px] text-red-400">{errors.machineryId}</p>
+              <p className="text-[11px] text-red-500">{errors.machineryId}</p>
             )}
           </div>
 
           {/* METER CONFIGURATION BADGE */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-400">
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-500">
               Meter Configuration
             </label>
-            <div className="h-[38px] px-3 bg-neutral-950/60 border border-neutral-800 rounded-xl flex items-center gap-2">
+            <div className="h-[34px] px-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2">
               {selectedMachine ? (
                 <>
                   <span
                     className={`w-2 h-2 rounded-full ${
-                      isMultiEngine ? "bg-purple-400" : "bg-emerald-400"
+                      isMultiEngine ? "bg-purple-500" : "bg-emerald-500"
                     }`}
                   />
-                  <span className="text-xs font-semibold text-neutral-200">
+                  <span className="text-xs font-semibold text-slate-700 truncate">
                     {isMultiEngine
-                      ? `Multi-Engine (${availableEngines.length || 2} Engines)`
+                      ? `Multi-Engine (${availableEngines.length || 2})`
                       : selectedMachine.meterType === "KM"
                       ? "Single KM Meter"
                       : "Single HOUR Meter"}
                   </span>
                 </>
               ) : (
-                <span className="text-xs text-neutral-500">Auto-detected from machine</span>
+                <span className="text-xs text-slate-400">Auto-detected</span>
               )}
             </div>
           </div>
 
           {/* PROJECT (AUTO-LOADED) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">
-              Project <span className="text-neutral-500">(Auto-loaded)</span>
-            </label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">Project</label>
             <select
               disabled={isViewMode}
               value={formProjectId}
@@ -732,7 +721,7 @@ export function LogBookTransactionForm({
                 setFormProjectId(e.target.value);
                 setFormSiteId("");
               }}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             >
               <option value="">-- Unassigned Project --</option>
               {projectsList.map((p) => (
@@ -744,15 +733,13 @@ export function LogBookTransactionForm({
           </div>
 
           {/* SITE (AUTO-LOADED) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">
-              Site <span className="text-neutral-500">(Auto-loaded)</span>
-            </label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">Site</label>
             <select
               disabled={isViewMode}
               value={formSiteId}
               onChange={(e) => setFormSiteId(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             >
               <option value="">-- Unassigned Site --</option>
               {filteredSites.map((s) => (
@@ -764,21 +751,21 @@ export function LogBookTransactionForm({
           </div>
 
           {/* OPERATOR NAME */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">Operator / Driver</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">Operator / Driver</label>
             <input
               type="text"
               disabled={isViewMode}
               placeholder="e.g. Ramesh Patil"
               value={operatorName}
               onChange={(e) => setOperatorName(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
           {/* TRIPS / HAULS */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">Trips / Hauls</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">Trips / Hauls</label>
             <input
               type="number"
               inputMode="numeric"
@@ -786,24 +773,24 @@ export function LogBookTransactionForm({
               placeholder="0"
               value={trips}
               onChange={(e) => setTrips(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
         </div>
 
-        {/* NON-BLOCKING SAME-DATE INFORMATION BANNER (REQUIREMENT 5) */}
+        {/* NON-BLOCKING SAME-DATE NOTICE (REQUIREMENT 5 & 11) */}
         {sameDateLogs.length > 0 && !sameDateNoticeDismissed && (
-          <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-200">
+          <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-900">
             <div className="flex items-start gap-2.5">
-              <span className="p-1 rounded-md bg-amber-500/20 text-amber-400 mt-0.5">
+              <span className="p-1 rounded-md bg-amber-100 text-amber-700 mt-0.5">
                 <Icon name="info" size={16} />
               </span>
               <div>
-                <p className="text-xs font-semibold text-amber-200">
+                <p className="text-xs font-semibold text-amber-900">
                   Existing entries found for this machinery on this date ({sameDateLogs.length}{" "}
                   {sameDateLogs.length === 1 ? "entry" : "entries"}).
                 </p>
-                <p className="text-[11px] text-amber-300/80">
+                <p className="text-[11px] text-amber-700">
                   Multiple shifts or trips on the same date are allowed. You can continue recording
                   this new entry.
                 </p>
@@ -814,7 +801,7 @@ export function LogBookTransactionForm({
               <button
                 type="button"
                 onClick={() => setShowSameDateDetails(!showSameDateDetails)}
-                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold transition-colors flex items-center gap-1"
+                className="px-2.5 py-1 rounded-lg bg-amber-100/80 hover:bg-amber-200/80 text-amber-800 text-xs font-semibold transition-colors flex items-center gap-1"
               >
                 <Icon name={showSameDateDetails ? "expand_less" : "visibility"} size={14} />
                 {showSameDateDetails ? "Hide Existing" : "View Existing"}
@@ -822,7 +809,7 @@ export function LogBookTransactionForm({
               <button
                 type="button"
                 onClick={() => setSameDateNoticeDismissed(true)}
-                className="px-2.5 py-1 rounded-lg bg-neutral-900 border border-neutral-700 hover:bg-neutral-800 text-neutral-300 text-xs font-semibold transition-colors"
+                className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 hover:bg-amber-50 text-amber-900 text-xs font-semibold transition-colors"
               >
                 Continue New Entry
               </button>
@@ -830,29 +817,29 @@ export function LogBookTransactionForm({
           </div>
         )}
 
-        {/* COLLAPSIBLE EXISTING SAME-DAY ENTRIES PREVIEW */}
+        {/* COLLAPSIBLE EXISTING ENTRIES PREVIEW */}
         {showSameDateDetails && sameDateLogs.length > 0 && (
-          <div className="p-3 bg-neutral-950/80 border border-neutral-800 rounded-xl space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Existing Entries for {formDate}:
             </p>
-            <div className="divide-y divide-neutral-900 text-xs">
+            <div className="divide-y divide-slate-200 text-xs">
               {sameDateLogs.map((l) => (
-                <div key={l.id} className="py-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2 font-mono text-neutral-300">
-                    <span className="text-amber-400 font-semibold">{l.logNo}</span>
-                    <span className="text-neutral-500">|</span>
+                <div key={l.id} className="py-1.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-mono text-slate-700">
+                    <span className="text-blue-700 font-semibold">{l.logNo}</span>
+                    <span className="text-slate-300">|</span>
                     <span>
                       {l.openingReading} → {l.closingReading} ({l.totalKmHours} Run)
                     </span>
                     {l.operatorName && (
                       <>
-                        <span className="text-neutral-500">|</span>
-                        <span className="text-neutral-400">Op: {l.operatorName}</span>
+                        <span className="text-slate-300">|</span>
+                        <span className="text-slate-500">Op: {l.operatorName}</span>
                       </>
                     )}
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-neutral-800 text-neutral-300">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-white border border-slate-200 text-slate-700">
                     {l.status}
                   </span>
                 </div>
@@ -862,36 +849,36 @@ export function LogBookTransactionForm({
         )}
       </div>
 
-      {/* 3. METER READINGS & ENGINE SECTION */}
+      {/* 3. METER READINGS & ENGINE SECTION (SOLID WHITE) */}
       {readingLoading ? (
-        <div className="p-8 rounded-2xl bg-neutral-900/60 border border-neutral-800 flex items-center justify-center gap-3 text-neutral-400">
-          <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-medium">Fetching previous readings &amp; fuel cross-reference...</span>
+        <div className="p-8 rounded-2xl bg-white border border-slate-200 flex items-center justify-center gap-3 text-slate-500 shadow-xs">
+          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-medium">Fetching readings &amp; fuel cross-reference...</span>
         </div>
       ) : !formMachineryId ? (
-        <div className="p-8 rounded-2xl bg-neutral-900/40 border border-dashed border-neutral-800 text-center space-y-2">
-          <div className="w-10 h-10 rounded-xl bg-neutral-800 text-neutral-400 mx-auto flex items-center justify-center">
-            <Icon name="touch_app" size={22} />
+        <div className="p-8 rounded-2xl bg-white border border-dashed border-slate-200 text-center space-y-2 shadow-xs">
+          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center">
+            <Icon name="touch_app" size={20} />
           </div>
-          <p className="text-sm font-semibold text-neutral-300">Please select an Equipment first</p>
-          <p className="text-xs text-neutral-500 max-w-md mx-auto">
+          <p className="text-sm font-semibold text-slate-700">Please select an Equipment first</p>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
             Choose a date and machinery above to automatically load previous closing readings, engine
             meters, and fuel allocations.
           </p>
         </div>
       ) : isMultiEngine && engineReadings.length > 0 ? (
-        /* MULTI-ENGINE INDEPENDENT READING CARDS (REQUIREMENT 3) */
+        /* MULTI-ENGINE INDEPENDENT CARDS (SOLID WHITE & CLEAN ACCENTS) */
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <span className="p-1 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
                 <Icon name="memory" size={16} />
               </span>
-              <h2 className="text-sm font-bold text-white tracking-wide">
+              <h2 className="text-sm font-bold text-slate-900 tracking-wide">
                 Multi-Engine Independent Meter Readings ({engineReadings.length} Engines)
               </h2>
             </div>
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs text-slate-500">
               Each engine operates on its own meter type and efficiency standard
             </span>
           </div>
@@ -906,16 +893,16 @@ export function LogBookTransactionForm({
               return (
                 <div
                   key={eng.engineId}
-                  className="p-5 rounded-2xl bg-neutral-900/70 border border-neutral-800 shadow-xl space-y-4 relative overflow-hidden"
+                  className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4"
                 >
-                  <div className="flex items-center justify-between border-b border-neutral-800/80 pb-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-lg bg-neutral-800 flex items-center justify-center text-xs font-bold text-amber-400 font-mono">
+                      <span className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-800 font-mono">
                         E{idx + 1}
                       </span>
                       <div>
-                        <h3 className="text-sm font-bold text-white">{eng.engineName}</h3>
-                        <p className="text-[10px] text-neutral-400 font-mono">
+                        <h3 className="text-sm font-bold text-slate-900">{eng.engineName}</h3>
+                        <p className="text-[10px] text-slate-500 font-mono">
                           Meter: {eng.meterType} | Std:{" "}
                           {eng.standardEfficiency != null
                             ? eng.meterType === "KM"
@@ -926,7 +913,7 @@ export function LogBookTransactionForm({
                       </div>
                     </div>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer text-neutral-400 hover:text-white">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900">
                       <input
                         type="checkbox"
                         disabled={isViewMode}
@@ -934,26 +921,26 @@ export function LogBookTransactionForm({
                         onChange={(e) =>
                           handleEngineReadingChange(eng.engineId, "isMeterReset", e.target.checked)
                         }
-                        className="rounded border-neutral-700 text-amber-500 focus:ring-amber-500/30"
+                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30"
                       />
                       <span className="text-[11px] font-medium">Meter Reset</span>
                     </label>
                   </div>
 
                   <div className="grid grid-cols-3 gap-3">
-                    {/* Previous Closing (Read Only) */}
+                    {/* Previous Closing */}
                     <div className="space-y-1">
-                      <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                         Prev. Closing
                       </span>
-                      <div className="h-[38px] px-3 bg-neutral-950/80 border border-neutral-800 rounded-xl flex items-center text-xs font-mono font-bold text-neutral-300">
+                      <div className="h-[36px] px-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center text-xs font-mono font-bold text-slate-700">
                         {eng.previousClosing > 0 ? eng.previousClosing.toFixed(1) : "-"}
                       </div>
                     </div>
 
-                    {/* Opening (Auto from prev closing, editable if reset) */}
+                    {/* Opening */}
                     <div className="space-y-1">
-                      <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider">
                         Opening {eng.meterType}
                       </span>
                       <input
@@ -965,17 +952,17 @@ export function LogBookTransactionForm({
                         onChange={(e) =>
                           handleEngineReadingChange(eng.engineId, "opening", e.target.value)
                         }
-                        className={`w-full h-[38px] px-3 bg-neutral-950 border rounded-xl text-xs font-mono font-bold text-white focus:outline-none ${
+                        className={`w-full h-[36px] px-3 border rounded-xl text-xs font-mono font-bold focus:outline-none ${
                           eng.isMeterReset
-                            ? "border-amber-500/50 bg-amber-950/20"
-                            : "border-neutral-800 cursor-not-allowed opacity-80"
+                            ? "bg-amber-50/50 border-amber-300 text-slate-900"
+                            : "bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed"
                         }`}
                       />
                     </div>
 
-                    {/* Closing (User Input, starts empty) */}
+                    {/* Closing */}
                     <div className="space-y-1">
-                      <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">
                         Closing {eng.meterType} *
                       </span>
                       <input
@@ -987,38 +974,38 @@ export function LogBookTransactionForm({
                         onChange={(e) =>
                           handleEngineReadingChange(eng.engineId, "closing", e.target.value)
                         }
-                        className={`w-full h-[38px] px-3 bg-neutral-950 border rounded-xl text-xs font-mono font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 ${
-                          errors[errKey] ? "border-red-500/80 bg-red-950/20" : "border-neutral-800"
+                        className={`w-full h-[36px] px-3 bg-white border rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                          errors[errKey] ? "border-red-400 bg-red-50/20" : "border-slate-300"
                         }`}
                       />
                     </div>
                   </div>
 
                   {errors[errKey] && (
-                    <p className="text-[11px] text-red-400">{errors[errKey]}</p>
+                    <p className="text-[11px] text-red-500">{errors[errKey]}</p>
                   )}
 
                   {/* Calculated Output Row */}
-                  <div className="p-3 bg-neutral-950/60 rounded-xl border border-neutral-800/80 flex items-center justify-between">
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-semibold text-neutral-400 uppercase">
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase">
                         Total {eng.meterType} Run:
                       </span>
-                      <p className="text-sm font-mono font-black text-amber-400">
+                      <p className="text-sm font-mono font-bold text-blue-700">
                         {totalRun != null ? `${totalRun.toFixed(1)} ${eng.meterType}` : "-"}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[10px] font-semibold text-neutral-400 uppercase">
+                      <span className="text-[10px] font-semibold text-slate-500 uppercase">
                         Standard Efficiency:
                       </span>
-                      <p className="text-xs font-mono font-semibold text-neutral-300">
+                      <p className="text-xs font-mono font-semibold text-slate-700">
                         {eng.standardEfficiency != null
                           ? eng.meterType === "KM"
                             ? `${eng.standardEfficiency} KM/L`
                             : `${eng.standardEfficiency} L/Hour`
-                          : "Standard Not Set"}
+                          : "Not Set"}
                       </p>
                     </div>
                   </div>
@@ -1028,14 +1015,14 @@ export function LogBookTransactionForm({
           </div>
         </div>
       ) : (
-        /* SINGLE ENGINE / DUAL KM + HOUR SECTION (REQUIREMENT 3 & 4) */
-        <div className="p-5 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-neutral-800/60 pb-3">
+        /* SINGLE ENGINE SECTION (SOLID WHITE) */
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <span className="p-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span className="p-1 rounded-md bg-blue-50 text-blue-600 border border-blue-100">
                 <Icon name="speed" size={16} />
               </span>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-300">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
                 Meter Readings —{" "}
                 {selectedMachine?.meterType === "KM"
                   ? "Kilometer (KM) Meter"
@@ -1044,7 +1031,7 @@ export function LogBookTransactionForm({
             </div>
 
             {/* Meter Reset Toggle */}
-            <label className="flex items-center gap-2 cursor-pointer text-neutral-400 hover:text-white">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-600 hover:text-slate-900">
               <input
                 type="checkbox"
                 disabled={isViewMode}
@@ -1055,7 +1042,7 @@ export function LogBookTransactionForm({
                     setSingleOpening(singlePreviousClosing.toString());
                   }
                 }}
-                className="rounded border-neutral-700 text-amber-500 focus:ring-amber-500/30"
+                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30"
               />
               <span className="text-xs font-medium">Meter Reset / Replacement</span>
             </label>
@@ -1063,26 +1050,26 @@ export function LogBookTransactionForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {/* Previous Closing Reading (READ ONLY) */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider flex items-center justify-between">
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center justify-between">
                 <span>Previous Closing</span>
-                <span className="text-[10px] text-neutral-500 font-normal">Read-only</span>
+                <span className="text-[10px] text-slate-400 font-normal">Read-only</span>
               </label>
-              <div className="h-[42px] px-3 bg-neutral-950/80 border border-neutral-800 rounded-xl flex items-center text-sm font-mono font-bold text-neutral-300">
+              <div className="h-[38px] px-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center text-sm font-mono font-bold text-slate-700">
                 {singlePreviousClosing != null && singlePreviousClosing > 0
                   ? `${singlePreviousClosing.toFixed(1)} ${selectedMachine?.meterType || ""}`
                   : "-"}
               </div>
             </div>
 
-            {/* Opening Reading (Auto from prev closing, unlocked on meter reset) */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center justify-between">
+            {/* Opening Reading */}
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center justify-between">
                 <span>
-                  Opening {selectedMachine?.meterType || "Reading"} <span className="text-amber-400">*</span>
+                  Opening {selectedMachine?.meterType || "Reading"} <span className="text-red-500">*</span>
                 </span>
                 {singleIsMeterReset && (
-                  <span className="text-[10px] text-amber-400 font-medium">Unlocked</span>
+                  <span className="text-[10px] text-amber-600 font-medium">Unlocked</span>
                 )}
               </label>
               <input
@@ -1092,21 +1079,21 @@ export function LogBookTransactionForm({
                 value={singleOpening}
                 placeholder={singlePreviousClosing != null ? singlePreviousClosing.toString() : ""}
                 onChange={(e) => setSingleOpening(e.target.value)}
-                className={`w-full h-[42px] px-3 bg-neutral-950 border rounded-xl text-sm font-mono font-bold text-white focus:outline-none transition-all ${
+                className={`w-full h-[38px] px-3 border rounded-xl text-sm font-mono font-bold focus:outline-none transition-all ${
                   singleIsMeterReset
-                    ? "border-amber-500/60 bg-amber-950/20 focus:ring-2 focus:ring-amber-500/30"
-                    : "border-neutral-800 cursor-not-allowed opacity-80"
+                    ? "bg-amber-50/50 border-amber-300 text-slate-900 focus:ring-2 focus:ring-amber-500/20"
+                    : "bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed"
                 }`}
               />
             </div>
 
-            {/* Closing Reading (User input, starts empty) */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center justify-between">
+            {/* Closing Reading */}
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-blue-600 uppercase tracking-wider flex items-center justify-between">
                 <span>
-                  Closing {selectedMachine?.meterType || "Reading"} <span className="text-amber-400">*</span>
+                  Closing {selectedMachine?.meterType || "Reading"} <span className="text-red-500">*</span>
                 </span>
-                {!singleClosing && <span className="text-[10px] text-amber-400/80">Required</span>}
+                {!singleClosing && <span className="text-[10px] text-amber-600">Required</span>}
               </label>
               <input
                 type="number"
@@ -1118,27 +1105,27 @@ export function LogBookTransactionForm({
                   setSingleClosing(e.target.value);
                   setErrors((prev) => ({ ...prev, closing: "" }));
                 }}
-                className={`w-full h-[42px] px-3 bg-neutral-950 border rounded-xl text-sm font-mono font-bold text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all ${
+                className={`w-full h-[38px] px-3 bg-white border rounded-xl text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all ${
                   errors.closing
-                    ? "border-red-500/80 bg-red-950/20 focus:ring-red-500/30"
-                    : "border-neutral-800 hover:border-neutral-700"
+                    ? "border-red-400 bg-red-50/20"
+                    : "border-slate-300 hover:border-slate-400"
                 }`}
               />
-              {errors.closing && <p className="text-[11px] text-red-400">{errors.closing}</p>}
+              {errors.closing && <p className="text-[11px] text-red-500">{errors.closing}</p>}
             </div>
           </div>
 
           {/* Instant Calculation Output */}
-          <div className="p-4 rounded-xl bg-neutral-950/80 border border-neutral-800/80 flex flex-wrap items-center justify-between gap-4">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="p-2 rounded-xl bg-neutral-900 border border-neutral-800 text-amber-400">
-                <Icon name="functions" size={18} />
+              <span className="p-2 rounded-xl bg-white border border-slate-200 text-blue-600 shadow-xs">
+                <Icon name="functions" size={16} />
               </span>
               <div>
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                   Total Shift Run
                 </span>
-                <p className="text-base font-mono font-black text-amber-400">
+                <p className="text-base font-mono font-bold text-blue-700">
                   {singleTotalRun != null
                     ? `${singleTotalRun.toFixed(1)} ${selectedMachine?.meterType || ""}`
                     : "-"}
@@ -1148,24 +1135,24 @@ export function LogBookTransactionForm({
 
             <div className="flex items-center gap-6 text-xs">
               <div>
-                <span className="text-[10px] font-semibold text-neutral-400 uppercase block">
+                <span className="text-[10px] font-semibold text-slate-500 uppercase block">
                   Standard Efficiency
                 </span>
-                <span className="font-mono font-semibold text-neutral-200">
+                <span className="font-mono font-semibold text-slate-700">
                   {singleStandardEfficiency != null
                     ? selectedMachine?.meterType === "KM"
                       ? `${singleStandardEfficiency} KM/L`
                       : `${singleStandardEfficiency} L/Hour`
-                    : "Standard Not Configured"}
+                    : "Standard Not Set"}
                 </span>
               </div>
 
               {singleEfficiency != null && (
                 <div>
-                  <span className="text-[10px] font-semibold text-neutral-400 uppercase block">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase block">
                     Actual Today
                   </span>
-                  <span className="font-mono font-bold text-emerald-400">
+                  <span className="font-mono font-bold text-emerald-600">
                     {selectedMachine?.meterType === "KM"
                       ? `${singleEfficiency} KM/L`
                       : `${singleEfficiency} L/Hour`}
@@ -1177,14 +1164,14 @@ export function LogBookTransactionForm({
         </div>
       )}
 
-      {/* 4. DIESEL CROSS REFERENCE & EFFICIENCY SUMMARY (READ-ONLY) */}
-      <div className="p-5 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl space-y-4">
-        <div className="flex items-center justify-between border-b border-neutral-800/60 pb-3">
+      {/* 4. DIESEL CROSS REFERENCE & EFFICIENCY SUMMARY (READ ONLY - SOLID WHITE) */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
-            <span className="p-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="p-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
               <Icon name="local_gas_station" size={16} />
             </span>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-300">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
               Fuel Cross-Reference (Sourced from Fuel Issues — Read Only)
             </h2>
           </div>
@@ -1192,7 +1179,7 @@ export function LogBookTransactionForm({
             <button
               type="button"
               onClick={() => setShowFuelDetails(!showFuelDetails)}
-              className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-medium"
+              className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 font-medium"
             >
               <Icon name={showFuelDetails ? "expand_less" : "expand_more"} size={16} />
               {showFuelDetails ? "Hide Slips" : `View ${fuelIssueCount} Slip(s)`}
@@ -1202,61 +1189,61 @@ export function LogBookTransactionForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* DIESEL ISSUED TODAY */}
-          <div className="p-3.5 bg-neutral-950/80 border border-neutral-800 rounded-xl space-y-1">
-            <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
               Diesel Issued Today
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-mono font-black text-emerald-400">
+              <span className="text-xl font-mono font-bold text-emerald-600">
                 {dieselIssuedLitres != null && dieselIssuedLitres > 0
                   ? dieselIssuedLitres.toFixed(2)
                   : "0.00"}
               </span>
-              <span className="text-xs font-semibold text-neutral-400">Litres</span>
+              <span className="text-xs font-semibold text-slate-500">Litres</span>
             </div>
-            <p className="text-[10px] text-neutral-500">
+            <p className="text-[10px] text-slate-500">
               {fuelIssueCount > 0
-                ? `Sum of ${fuelIssueCount} Fuel Issue slips recorded on this date`
+                ? `Sum of ${fuelIssueCount} Fuel Issue slips`
                 : "No fuel issue entries for this equipment today"}
             </p>
           </div>
 
           {/* APPLICABLE STANDARD EFFICIENCY */}
-          <div className="p-3.5 bg-neutral-950/80 border border-neutral-800 rounded-xl space-y-1">
-            <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
               Configured Standard
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-mono font-bold text-neutral-200">
+              <span className="text-xl font-mono font-bold text-slate-800">
                 {singleStandardEfficiency != null ? singleStandardEfficiency : "-"}
               </span>
-              <span className="text-xs font-semibold text-neutral-400">
+              <span className="text-xs font-semibold text-slate-500">
                 {selectedMachine?.meterType === "KM" ? "KM/L" : "L/Hour"}
               </span>
             </div>
-            <p className="text-[10px] text-neutral-500">From Machinery / Engine Master</p>
+            <p className="text-[10px] text-slate-500">From Machinery / Engine Master</p>
           </div>
 
           {/* ACTUAL EFFICIENCY & VARIANCE */}
-          <div className="p-3.5 bg-neutral-950/80 border border-neutral-800 rounded-xl space-y-1">
-            <span className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
               Shift Efficiency &amp; Variance
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-mono font-bold text-white">
+              <span className="text-xl font-mono font-bold text-slate-900">
                 {singleEfficiency != null ? singleEfficiency : "-"}
               </span>
               {singleVariance != null && (
                 <span
                   className={`text-xs font-mono font-semibold ${
-                    singleVariance >= 0 ? "text-emerald-400" : "text-red-400"
+                    singleVariance >= 0 ? "text-emerald-600" : "text-rose-600"
                   }`}
                 >
                   ({singleVariance >= 0 ? `+${singleVariance}` : singleVariance})
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-neutral-500">
+            <p className="text-[10px] text-slate-500">
               {singleEfficiency != null ? "Calculated from run and fuel" : "Requires valid run & fuel"}
             </p>
           </div>
@@ -1264,26 +1251,26 @@ export function LogBookTransactionForm({
 
         {/* EXPANDABLE FUEL ISSUES LIST */}
         {showFuelDetails && dailyFuelIssues.length > 0 && (
-          <div className="p-3 bg-neutral-950/90 border border-neutral-800 rounded-xl space-y-2 animate-in fade-in">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Fuel Issue Slips on {formDate}:
             </p>
-            <div className="divide-y divide-neutral-900 text-xs">
+            <div className="divide-y divide-slate-200 text-xs">
               {dailyFuelIssues.map((iss) => (
-                <div key={iss.id} className="py-2 flex items-center justify-between">
-                  <div className="font-mono text-neutral-300">
-                    <span className="text-amber-400 font-semibold">{iss.issueNo}</span>
+                <div key={iss.id} className="py-1.5 flex items-center justify-between">
+                  <div className="font-mono text-slate-700">
+                    <span className="text-blue-700 font-semibold">{iss.issueNo}</span>
                     {iss.slipReference && (
-                      <span className="text-neutral-500 ml-2">Slip: {iss.slipReference}</span>
+                      <span className="text-slate-500 ml-2">Slip: {iss.slipReference}</span>
                     )}
-                    <span className="text-neutral-500 ml-2">({iss.fuelSource})</span>
+                    <span className="text-slate-500 ml-2">({iss.fuelSource})</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-mono font-bold text-emerald-400">
+                    <span className="font-mono font-bold text-emerald-600">
                       {iss.quantityLitres.toFixed(2)} L
                     </span>
                     {iss.operatorName && (
-                      <span className="text-[11px] text-neutral-400 ml-2">
+                      <span className="text-[11px] text-slate-500 ml-2">
                         Op: {iss.operatorName}
                       </span>
                     )}
@@ -1295,42 +1282,42 @@ export function LogBookTransactionForm({
         )}
       </div>
 
-      {/* 5. OPERATIONAL & SHIFT TIMING DETAILS */}
-      <div className="p-5 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl space-y-4">
-        <div className="flex items-center gap-2 border-b border-neutral-800/60 pb-3">
-          <span className="p-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">
+      {/* 5. OPERATIONAL & SHIFT TIMING DETAILS (SOLID WHITE) */}
+      <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          <span className="p-1 rounded-md bg-blue-50 text-blue-600 border border-blue-100">
             <Icon name="schedule" size={16} />
           </span>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-300">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
             Operational Shift &amp; Working Hours
           </h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">Start Time</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">Start Time</label>
             <input
               type="time"
               disabled={isViewMode}
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">End Time</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">End Time</label>
             <input
               type="time"
               disabled={isViewMode}
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">Working Hours</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">Working Hours</label>
             <input
               type="number"
               inputMode="decimal"
@@ -1338,12 +1325,12 @@ export function LogBookTransactionForm({
               placeholder="e.g. 8.5"
               value={workingHours}
               onChange={(e) => setWorkingHours(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-neutral-300">Breakdown / Idle Hours</label>
+          <div className="space-y-1">
+            <label className="block text-xs font-semibold text-slate-700">Breakdown / Idle Hours</label>
             <input
               type="number"
               inputMode="decimal"
@@ -1351,42 +1338,42 @@ export function LogBookTransactionForm({
               placeholder="0"
               value={breakdownHours}
               onChange={(e) => setBreakdownHours(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="space-y-1.5 sm:col-span-2">
-            <label className="block text-xs font-semibold text-neutral-300">Work Description</label>
+          <div className="space-y-1 sm:col-span-2">
+            <label className="block text-xs font-semibold text-slate-700">Work Description</label>
             <input
               type="text"
               disabled={isViewMode}
               placeholder="e.g. Sub-grade excavation, Pier foundation work"
               value={workDescription}
               onChange={(e) => setWorkDescription(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
 
-          <div className="space-y-1.5 sm:col-span-2">
-            <label className="block text-xs font-semibold text-neutral-300">Remarks / Notes</label>
+          <div className="space-y-1 sm:col-span-2">
+            <label className="block text-xs font-semibold text-slate-700">Remarks / Notes</label>
             <input
               type="text"
               disabled={isViewMode}
               placeholder="Operational remarks, weather delay, terrain details"
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
         </div>
       </div>
 
-      {/* 6. MOBILE STICKY BOTTOM ACTION BAR */}
+      {/* 6. MOBILE STICKY BOTTOM ACTION BAR (CLEAN LIGHT) */}
       {!isViewMode && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 p-3 bg-neutral-950/90 backdrop-blur-md border-t border-neutral-800/80 flex items-center justify-between gap-2 lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-30 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-between gap-2 lg:hidden shadow-lg">
           <Link
             href="/machinery/log-book"
-            className="px-3 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 text-xs font-semibold"
+            className="px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs font-semibold shadow-xs"
           >
             Cancel
           </Link>
@@ -1395,7 +1382,7 @@ export function LogBookTransactionForm({
               type="button"
               disabled={submitting}
               onClick={() => handleSave("draft")}
-              className="px-3 py-2 rounded-xl bg-neutral-800 text-neutral-200 border border-neutral-700 text-xs font-semibold flex items-center gap-1"
+              className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold flex items-center gap-1 shadow-xs"
             >
               <Icon name="drafts" size={14} />
               Draft
@@ -1404,10 +1391,10 @@ export function LogBookTransactionForm({
               type="button"
               disabled={submitting}
               onClick={() => handleSave("approved")}
-              className="px-4 py-2 rounded-xl bg-amber-500 text-neutral-950 text-xs font-bold shadow-md shadow-amber-500/20 flex items-center gap-1.5"
+              className="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-xs flex items-center gap-1.5"
             >
               {submitting ? (
-                <div className="w-3.5 h-3.5 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <Icon name="check_circle" size={15} />
               )}
@@ -1419,4 +1406,3 @@ export function LogBookTransactionForm({
     </div>
   );
 }
-

@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { StatusPill } from "@/components/ui/StatusPill";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToast } from "@/components/ui/Toast";
+import { PageTransition } from "@/components/ui/PageTransition";
 import {
   getLogBooks,
   deleteLogBook,
@@ -196,29 +197,29 @@ export default function LogBookPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-5">
       <PageHeader
         title="Daily Equipment Log Book & Fuel Efficiency"
         subtitle="Automatic opening reading continuity, view-only diesel cross-reference, multi-engine independent meters, and standard variance tracking."
         action={
           <Link
             href="/machinery/log-book/new"
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2"
+            className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-2"
           >
-            <Icon name="add" size={18} />
+            <Icon name="add" size={16} />
             Record Daily Log
           </Link>
         }
       />
 
       {/* Segmented Tabs Navigation */}
-      <div className="inline-flex items-center p-1 bg-neutral-900 border border-neutral-800 rounded-xl">
+      <div className="inline-flex items-center p-1 bg-slate-100/90 border border-slate-200/80 rounded-xl">
         <button
           onClick={() => setActiveTab("logs")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "logs"
-              ? "bg-neutral-800 text-white shadow-sm border border-neutral-700/80"
-              : "text-neutral-400 hover:text-white"
+              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900"
           }`}
         >
           <Icon name="menu_book" size={16} />
@@ -227,24 +228,24 @@ export default function LogBookPage() {
 
         <button
           onClick={() => setActiveTab("averages")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "averages"
-              ? "bg-neutral-800 text-white shadow-sm border border-neutral-700/80"
-              : "text-neutral-400 hover:text-white"
+              ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+              : "text-slate-600 hover:text-slate-900"
           }`}
         >
-          <Icon name="speed" size={16} className="text-amber-400" />
+          <Icon name="speed" size={16} className="text-blue-600" />
           Machinery Average &amp; Fuel Efficiency Engine
         </button>
       </div>
 
       {activeTab === "logs" ? (
         <>
-          {/* FILTER STRIP (REQUIREMENT 11) */}
-          <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl space-y-3">
+          {/* FILTER STRIP (SOLID WHITE ENTERPRISE CARD) */}
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
-                <Icon name="filter_alt" size={15} className="text-amber-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Icon name="filter_alt" size={15} className="text-blue-600" />
                 Filter Log Entries
               </span>
               {(searchTerm ||
@@ -265,7 +266,7 @@ export default function LogBookPage() {
                     setSelectedEngineId("all");
                     setSelectedMeterType("all");
                   }}
-                  className="text-xs text-amber-400 hover:text-amber-300 font-medium"
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                 >
                   Reset Filters
                 </button>
@@ -280,7 +281,7 @@ export default function LogBookPage() {
                   placeholder="Search Log #, machine, operator..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 />
               </div>
 
@@ -290,7 +291,7 @@ export default function LogBookPage() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 />
               </div>
 
@@ -302,7 +303,7 @@ export default function LogBookPage() {
                     setSelectedMachineId(e.target.value);
                     setSelectedEngineId("all");
                   }}
-                  className="w-full px-2.5 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Machinery ({machinery.length})</option>
                   {machinery.map((m) => (
@@ -318,7 +319,7 @@ export default function LogBookPage() {
                 <select
                   value={selectedProjectId}
                   onChange={(e) => setSelectedProjectId(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Projects</option>
                   {projects.map((p) => (
@@ -334,7 +335,7 @@ export default function LogBookPage() {
                 <select
                   value={selectedEngineId}
                   onChange={(e) => setSelectedEngineId(e.target.value)}
-                  className="w-full px-2.5 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Engines</option>
                   {filteredEnginesForFilter.map((e) => (
@@ -350,7 +351,7 @@ export default function LogBookPage() {
                 <select
                   value={selectedMeterType}
                   onChange={(e) => setSelectedMeterType(e.target.value as any)}
-                  className="w-full px-2.5 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Meters</option>
                   <option value="KM">KM Only</option>
@@ -359,14 +360,14 @@ export default function LogBookPage() {
               </div>
             </div>
 
-            <div className="text-[11px] text-neutral-400 font-medium text-right">
+            <div className="text-[11px] text-slate-500 font-medium text-right">
               Showing {filteredLogs.length} of {logs.length} entries
             </div>
           </div>
 
           {loading ? (
-            <div className="p-12 text-center text-neutral-400 flex flex-col items-center justify-center gap-3 bg-neutral-900/40 rounded-2xl border border-neutral-800">
-              <span className="w-7 h-7 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
+              <span className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
               <p className="text-xs font-medium">Loading equipment log books...</p>
             </div>
           ) : filteredLogs.length === 0 ? (
@@ -382,12 +383,12 @@ export default function LogBookPage() {
               actionHref="/machinery/log-book/new"
             />
           ) : (
-            /* TABLE OF LOG BOOK ENTRIES (REQUIREMENT 11) */
-            <div className="rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl overflow-hidden">
+            /* TABLE OF LOG BOOK ENTRIES (SOLID WHITE) */
+            <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-neutral-800 bg-neutral-950/70 text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                    <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">Log No</th>
                       <th className="px-4 py-3">Equipment</th>
@@ -402,7 +403,7 @@ export default function LogBookPage() {
                       <th className="px-4 py-3 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-800/60 text-xs font-medium">
+                  <tbody className="divide-y divide-slate-100 text-xs font-medium">
                     {filteredLogs.map((l) => {
                       const m = machinery.find((mac) => mac.id === l.machineryId);
                       const eng = l.engineId ? allEngines.find((e) => e.id === l.engineId) : null;
@@ -432,35 +433,35 @@ export default function LogBookPage() {
                       return (
                         <tr
                           key={l.id}
-                          className="hover:bg-neutral-800/40 transition-colors group"
+                          className="hover:bg-slate-50/70 transition-colors group"
                         >
                           {/* Date */}
-                          <td className="px-4 py-3 font-mono text-neutral-300 whitespace-nowrap">
+                          <td className="px-4 py-3 font-mono text-slate-700 whitespace-nowrap">
                             {l.date}
                           </td>
 
                           {/* Log No */}
-                          <td className="px-4 py-3 font-mono font-semibold text-amber-400 whitespace-nowrap">
+                          <td className="px-4 py-3 font-mono font-semibold text-blue-700 whitespace-nowrap">
                             {l.logNo}
                           </td>
 
                           {/* Machinery Asset Code */}
                           <td className="px-4 py-3">
-                            <span className="font-semibold text-white">
+                            <span className="font-semibold text-slate-900">
                               {m?.assetCode || "MCH"}
                             </span>
-                            <p className="text-[10px] text-neutral-400 truncate max-w-[140px]">
+                            <p className="text-[10px] text-slate-500 truncate max-w-[140px]">
                               {m?.make} {m?.model}
                             </p>
                           </td>
 
                           {/* Registration / Machinery Name */}
                           <td className="px-4 py-3">
-                            <span className="font-semibold text-neutral-200">
+                            <span className="font-semibold text-slate-800">
                               {m?.registrationNo ? m.registrationNo : m?.machineryName || "—"}
                             </span>
                             {m?.registrationNo && (
-                              <p className="text-[10px] text-neutral-400 truncate max-w-[140px]">
+                              <p className="text-[10px] text-slate-500 truncate max-w-[140px]">
                                 {m?.machineryName}
                               </p>
                             )}
@@ -469,41 +470,41 @@ export default function LogBookPage() {
                           {/* Engine */}
                           <td className="px-4 py-3 whitespace-nowrap">
                             {eng ? (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-950/60 border border-purple-800/60 text-purple-300">
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-purple-50 border border-purple-200 text-purple-700">
                                 {eng.engineName}
                               </span>
                             ) : (
-                              <span className="text-neutral-500 text-[11px]">Primary / Single</span>
+                              <span className="text-slate-400 text-[11px]">Primary / Single</span>
                             )}
                           </td>
 
                           {/* Opening Reading */}
-                          <td className="px-4 py-3 text-right font-mono text-neutral-300">
+                          <td className="px-4 py-3 text-right font-mono text-slate-700">
                             {l.openingReading.toFixed(1)}
                             {l.isMeterReset && (
-                              <span className="ml-1 text-[9px] text-amber-400">(Reset)</span>
+                              <span className="ml-1 text-[9px] text-amber-600 font-bold">(Reset)</span>
                             )}
                           </td>
 
                           {/* Closing Reading */}
-                          <td className="px-4 py-3 text-right font-mono text-white font-semibold">
+                          <td className="px-4 py-3 text-right font-mono text-slate-900 font-semibold">
                             {l.closingReading.toFixed(1)}
                           </td>
 
                           {/* Total Run */}
                           <td className="px-4 py-3 text-right">
-                            <span className="px-2 py-0.5 rounded-md bg-neutral-950 border border-neutral-800 font-mono font-bold text-amber-400">
+                            <span className="px-2 py-0.5 rounded-md bg-slate-50 border border-slate-200 font-mono font-bold text-blue-700">
                               {l.totalKmHours.toFixed(1)} {meterLabel}
                             </span>
                           </td>
 
                           {/* Diesel Issued (Read-only) */}
-                          <td className="px-4 py-3 text-right font-mono text-emerald-400 font-semibold">
+                          <td className="px-4 py-3 text-right font-mono text-emerald-600 font-semibold">
                             {dieselOnDate > 0 ? `${dieselOnDate.toFixed(1)} L` : "0.0 L"}
                           </td>
 
                           {/* Efficiency */}
-                          <td className="px-4 py-3 text-right font-mono text-neutral-300">
+                          <td className="px-4 py-3 text-right font-mono text-slate-700">
                             {efficiencyStr}
                           </td>
 
@@ -529,7 +530,7 @@ export default function LogBookPage() {
                               <Link
                                 href={`/machinery/log-book/${l.id}?view=true`}
                                 title="View Details"
-                                className="p-1.5 rounded-lg bg-neutral-800/80 hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
+                                className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors border border-slate-200"
                               >
                                 <Icon name="visibility" size={15} />
                               </Link>
@@ -538,7 +539,7 @@ export default function LogBookPage() {
                               <Link
                                 href={`/machinery/log-book/${l.id}`}
                                 title="Edit Transaction"
-                                className="p-1.5 rounded-lg bg-neutral-800/80 hover:bg-amber-500/20 text-neutral-400 hover:text-amber-300 transition-colors"
+                                className="p-1.5 rounded-lg bg-blue-50/60 hover:bg-blue-100 text-blue-600 transition-colors border border-blue-200/80"
                               >
                                 <Icon name="edit" size={15} />
                               </Link>
@@ -548,7 +549,7 @@ export default function LogBookPage() {
                                 type="button"
                                 onClick={() => handleDeleteSpecificLog(l)}
                                 title="Delete Entry"
-                                className="p-1.5 rounded-lg bg-neutral-800/80 hover:bg-red-500/20 text-neutral-400 hover:text-red-400 transition-colors"
+                                className="p-1.5 rounded-lg bg-rose-50/60 hover:bg-rose-100 text-rose-600 transition-colors border border-rose-200/80"
                               >
                                 <Icon name="delete" size={15} />
                               </button>
@@ -564,49 +565,49 @@ export default function LogBookPage() {
           )}
         </>
       ) : (
-        /* TAB 2: MACHINERY AVERAGE & FUEL EFFICIENCY ENGINE */
-        <div className="space-y-6">
-          <div className="p-5 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl space-y-4">
+        /* TAB 2: MACHINERY AVERAGE & FUEL EFFICIENCY ENGINE (SOLID WHITE) */
+        <div className="space-y-5">
+          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-white flex items-center gap-2 uppercase tracking-wide">
-                <Icon name="tune" size={16} className="text-amber-400" />
+              <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2 uppercase tracking-wide">
+                <Icon name="tune" size={16} className="text-blue-600" />
                 Select Period &amp; Equipment for Average Calculation
               </h3>
-              <span className="text-xs text-neutral-400 font-normal">
+              <span className="text-xs text-slate-500 font-normal">
                 Calculates from real database Log Books &amp; Fuel Issues
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-300 mb-1">From Date *</label>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">From Date *</label>
                 <input
                   type="date"
                   value={avgFromDate}
                   onChange={(e) => setAvgFromDate(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-300 mb-1">To Date *</label>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">To Date *</label>
                 <input
                   type="date"
                   value={avgToDate}
                   onChange={(e) => setAvgToDate(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-300 mb-1">Machinery</label>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Machinery</label>
                 <select
                   value={avgMachineId}
                   onChange={(e) => {
                     setAvgMachineId(e.target.value);
                     setAvgEngineId("all");
                   }}
-                  className="w-full px-3 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Machinery ({machinery.length})</option>
                   {machinery.map((m) => (
@@ -618,11 +619,11 @@ export default function LogBookPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-300 mb-1">Project (Optional)</label>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Project (Optional)</label>
                 <select
                   value={avgProjectId}
                   onChange={(e) => setAvgProjectId(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Projects</option>
                   {projects.map((p) => (
@@ -634,11 +635,11 @@ export default function LogBookPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-neutral-300 mb-1">Site (Optional)</label>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">Site (Optional)</label>
                 <select
                   value={avgSiteId}
                   onChange={(e) => setAvgSiteId(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-neutral-950 border border-neutral-800 rounded-xl text-xs font-medium text-white focus:outline-none focus:ring-1 focus:ring-amber-500/40"
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500/40"
                 >
                   <option value="all">All Sites</option>
                   {sites.map((s) => (
@@ -654,10 +655,10 @@ export default function LogBookPage() {
                   type="button"
                   onClick={loadEfficiency}
                   disabled={efficiencyLoading}
-                  className="w-full px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20"
+                  className="w-full px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs"
                 >
                   {efficiencyLoading ? (
-                    <span className="w-4 h-4 border-2 border-neutral-950 border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
                       <Icon name="refresh" size={16} /> Calculate Average
@@ -670,32 +671,32 @@ export default function LogBookPage() {
 
           {/* Efficiency Summary KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800 border-l-4 border-l-blue-500">
-              <p className="text-[11px] text-neutral-400 uppercase font-semibold">Total Run in Period</p>
-              <p className="text-xl font-mono font-bold text-white mt-1">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 border-l-4 border-l-blue-500 shadow-xs">
+              <p className="text-[11px] text-slate-500 uppercase font-semibold">Total Run in Period</p>
+              <p className="text-xl font-mono font-bold text-slate-900 mt-1">
                 {efficiencyRecords.reduce((acc, r) => acc + r.totalKmHours, 0).toLocaleString(undefined, { minimumFractionDigits: 1 })}{" "}
-                <span className="text-xs text-neutral-400">Total Units</span>
+                <span className="text-xs text-slate-500">Units</span>
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800 border-l-4 border-l-amber-500">
-              <p className="text-[11px] text-neutral-400 uppercase font-semibold">Total Fuel Issued</p>
-              <p className="text-xl font-mono font-bold text-white mt-1">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 border-l-4 border-l-amber-500 shadow-xs">
+              <p className="text-[11px] text-slate-500 uppercase font-semibold">Total Fuel Issued</p>
+              <p className="text-xl font-mono font-bold text-slate-900 mt-1">
                 {efficiencyRecords.reduce((acc, r) => acc + r.totalDieselLitres, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}{" "}
-                <span className="text-xs text-neutral-400">Litres</span>
+                <span className="text-xs text-slate-500">Litres</span>
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800 border-l-4 border-l-emerald-500">
-              <p className="text-[11px] text-neutral-400 uppercase font-semibold">Within Standard</p>
-              <p className="text-xl font-mono font-bold text-emerald-400 mt-1">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 border-l-4 border-l-emerald-500 shadow-xs">
+              <p className="text-[11px] text-slate-500 uppercase font-semibold">Within Standard</p>
+              <p className="text-xl font-mono font-bold text-emerald-600 mt-1">
                 {efficiencyRecords.filter((r) => r.status === "Within Standard" || r.status === "Lower Consumption").length} / {efficiencyRecords.length}
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-neutral-900/60 border border-neutral-800 border-l-4 border-l-red-500">
-              <p className="text-[11px] text-neutral-400 uppercase font-semibold">Higher Consumption</p>
-              <p className="text-xl font-mono font-bold text-red-400 mt-1">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 border-l-4 border-l-rose-500 shadow-xs">
+              <p className="text-[11px] text-slate-500 uppercase font-semibold">Higher Consumption</p>
+              <p className="text-xl font-mono font-bold text-rose-600 mt-1">
                 {efficiencyRecords.filter((r) => r.status === "Higher Consumption").length}
               </p>
             </div>
@@ -703,8 +704,8 @@ export default function LogBookPage() {
 
           {/* Efficiency Table */}
           {efficiencyLoading ? (
-            <div className="p-12 text-center text-neutral-400 flex flex-col items-center justify-center gap-3 bg-neutral-900/40 rounded-2xl border border-neutral-800">
-              <span className="w-7 h-7 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <div className="p-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
+              <span className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
               <p className="text-xs font-medium">Computing average consumption &amp; standard variances...</p>
             </div>
           ) : efficiencyRecords.length === 0 ? (
@@ -714,11 +715,11 @@ export default function LogBookPage() {
               description="No log book or fuel records were found in the selected date range for the specified equipment."
             />
           ) : (
-            <div className="rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-md shadow-xl overflow-hidden">
+            <div className="rounded-2xl bg-white border border-slate-200/90 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-neutral-800 bg-neutral-950/70 text-[11px] font-bold uppercase tracking-wider text-neutral-400">
+                    <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
                       <th className="px-4 py-3">Asset Code</th>
                       <th className="px-4 py-3">Equipment / Engine</th>
                       <th className="px-4 py-3">Meter Type</th>
@@ -730,39 +731,39 @@ export default function LogBookPage() {
                       <th className="px-4 py-3 text-center">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-neutral-800/60 text-xs font-medium">
+                  <tbody className="divide-y divide-slate-100 text-xs font-medium">
                     {efficiencyRecords.map((r, i) => {
                       const isKm = r.meterType === "KM";
                       const avgUnit = isKm ? "KM/L" : "L/Hour";
                       return (
-                        <tr key={i} className="hover:bg-neutral-800/40 transition-colors">
-                          <td className="px-4 py-3 font-mono font-semibold text-amber-400">
+                        <tr key={i} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="px-4 py-3 font-mono font-semibold text-blue-700">
                             {r.assetCode}
                           </td>
                           <td className="px-4 py-3">
-                            <p className="font-semibold text-white">{r.machineryName}</p>
+                            <p className="font-semibold text-slate-900">{r.machineryName}</p>
                             {r.registrationNo && (
-                              <p className="text-[10px] text-neutral-400 font-mono">{r.registrationNo}</p>
+                              <p className="text-[10px] text-slate-500 font-mono">{r.registrationNo}</p>
                             )}
                             {r.engineName && (
-                              <span className="text-[10px] text-purple-400 font-medium">
+                              <span className="text-[10px] text-purple-600 font-medium">
                                 Engine: {r.engineName}
                               </span>
                             )}
                           </td>
-                          <td className="px-4 py-3 font-mono text-neutral-300">
+                          <td className="px-4 py-3 font-mono text-slate-600">
                             {r.meterType}
                           </td>
-                          <td className="px-4 py-3 font-mono text-white text-right font-bold">
+                          <td className="px-4 py-3 font-mono text-slate-900 text-right font-bold">
                             {r.totalKmHours.toFixed(1)} {r.meterType}
                           </td>
-                          <td className="px-4 py-3 font-mono text-emerald-400 text-right font-bold">
+                          <td className="px-4 py-3 font-mono text-emerald-600 text-right font-bold">
                             {r.totalDieselLitres.toFixed(2)} L
                           </td>
-                          <td className="px-4 py-3 font-mono text-amber-300 text-right font-black">
+                          <td className="px-4 py-3 font-mono text-blue-700 text-right font-bold">
                             {r.actualAverage > 0 ? `${r.actualAverage.toFixed(2)} ${avgUnit}` : "—"}
                           </td>
-                          <td className="px-4 py-3 font-mono text-neutral-400 text-right">
+                          <td className="px-4 py-3 font-mono text-slate-500 text-right">
                             {r.standardFuelEfficiency != null ? `${r.standardFuelEfficiency.toFixed(2)} ${avgUnit}` : "Not Set"}
                           </td>
                           <td className="px-4 py-3 font-mono text-right font-semibold">
@@ -770,38 +771,38 @@ export default function LogBookPage() {
                               <span
                                 className={
                                   (isKm && r.variance >= 0) || (!isKm && r.variance <= 0)
-                                    ? "text-emerald-400"
-                                    : "text-red-400"
+                                    ? "text-emerald-600"
+                                    : "text-rose-600"
                                 }
                               >
                                 {r.variance > 0 ? `+${r.variance.toFixed(2)}` : r.variance.toFixed(2)}{" "}
                                 {r.variancePercentage != null ? `(${r.variancePercentage > 0 ? "+" : ""}${r.variancePercentage.toFixed(0)}%)` : ""}
                               </span>
                             ) : (
-                              <span className="text-neutral-500">—</span>
+                              <span className="text-slate-400">—</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span
                               className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                                 r.status === "Within Standard"
-                                  ? "bg-emerald-950/70 text-emerald-400 border border-emerald-800/80"
+                                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                                   : r.status === "Lower Consumption"
-                                  ? "bg-blue-950/70 text-blue-400 border border-blue-800/80"
+                                  ? "bg-blue-50 text-blue-700 border border-blue-200"
                                   : r.status === "Higher Consumption"
-                                  ? "bg-red-950/70 text-red-400 border border-red-800/80"
-                                  : "bg-neutral-800 text-neutral-400 border border-neutral-700"
+                                  ? "bg-rose-50 text-rose-700 border border-rose-200"
+                                  : "bg-slate-100 text-slate-600 border border-slate-200"
                               }`}
                             >
                               <span
                                 className={`w-1.5 h-1.5 rounded-full ${
                                   r.status === "Within Standard"
-                                    ? "bg-emerald-400"
+                                    ? "bg-emerald-500"
                                     : r.status === "Lower Consumption"
-                                    ? "bg-blue-400"
+                                    ? "bg-blue-500"
                                     : r.status === "Higher Consumption"
-                                    ? "bg-red-400"
-                                    : "bg-neutral-500"
+                                    ? "bg-rose-500"
+                                    : "bg-slate-400"
                                 }`}
                               />
                               {r.status}
@@ -817,6 +818,6 @@ export default function LogBookPage() {
           )}
         </div>
       )}
-    </div>
+    </PageTransition>
   );
 }
