@@ -1,0 +1,484 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Trips &amp; Dispatch | FleetCommand</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#ffb596",
+                    "on-surface-variant": "#434655",
+                    "tertiary-container": "#bc4800",
+                    "secondary": "#505f76",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#eeefff",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#191b23",
+                    "on-tertiary-fixed": "#360f00",
+                    "surface-container-high": "#e7e7f3",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "background": "#faf8ff",
+                    "surface-container-highest": "#e1e2ed",
+                    "surface": "#faf8ff",
+                    "on-background": "#191b23",
+                    "tertiary-fixed": "#ffdbcd",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#c3c6d7",
+                    "on-primary-fixed": "#00174b",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#f3f3fe",
+                    "primary-fixed": "#dbe1ff",
+                    "primary-container": "#2563eb",
+                    "surface-tint": "#0053db",
+                    "surface-variant": "#e1e2ed",
+                    "inverse-surface": "#2e3039",
+                    "on-secondary-container": "#54647a",
+                    "tertiary": "#943700",
+                    "surface-dim": "#d9d9e5",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-secondary-fixed": "#0b1c30",
+                    "outline": "#737686",
+                    "inverse-on-surface": "#f0f0fb",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#ededf9",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "surface-bright": "#faf8ff",
+                    "primary": "#004ac6",
+                    "secondary-container": "#d0e1fb",
+                    "on-tertiary-container": "#ffede6",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "on-tertiary-fixed-variant": "#7d2d00",
+                    "secondary-fixed": "#d3e4fe"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar_collapsed": "80px",
+                    "container_padding": "32px",
+                    "component_gap": "16px",
+                    "gutter": "24px",
+                    "sidebar_width": "280px",
+                    "header_height": "64px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "data-mono": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "display": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "display": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .dark {
+            background-color: #0f172a; /* Slate-900 override for base background */
+            color: #f1f5f9;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="dark overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-sidebar_width h-screen fixed left-0 top-0 border-r border-slate-800 bg-slate-900 shadow-sm z-50 flex flex-col h-full py-4">
+<div class="px-6 mb-8">
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim">FleetCommand</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant opacity-60">Mission Control</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-body-md text-body-md">Live Tracking</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-body-md text-body-md">Vehicles</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-body-md text-body-md">Drivers</span>
+</a>
+<!-- ACTIVE TAB: Trips & Dispatch -->
+<a class="flex items-center gap-3 px-6 py-3 border-l-4 border-primary bg-slate-800/50 text-white font-bold scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined text-primary">route</span>
+<span class="font-body-md text-body-md">Trips &amp; Dispatch</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">build</span>
+<span class="font-body-md text-body-md">Maintenance</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">local_gas_station</span>
+<span class="font-body-md text-body-md">Fuel &amp; Cost</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-body-md text-body-md">Compliance</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-6 py-3 text-on-surface-variant hover:bg-slate-800 transition-colors duration-200 mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-sidebar_width w-[calc(100%-theme(spacing.sidebar_width))] h-screen flex flex-col bg-slate-950">
+<!-- Top Navbar -->
+<header class="h-header_height flex items-center justify-between px-gutter border-b border-slate-800 bg-slate-900 shadow-sm z-40">
+<div class="flex items-center bg-slate-800 rounded-lg px-3 py-1.5 w-96">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md w-full text-slate-200 placeholder:text-slate-500" placeholder="Search trips, routes, or drivers..." type="text">
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-opacity cursor-pointer">calendar_today</button>
+<div class="relative">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-opacity cursor-pointer">notifications</button>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+</div>
+<div class="h-8 w-px bg-slate-700"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="text-body-md font-bold leading-tight group-hover:text-primary transition-colors">Alex Thorne</p>
+<p class="text-label-sm text-on-surface-variant opacity-60">Fleet Manager</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-slate-700 group-hover:border-primary transition-all object-cover" data-alt="A professional close-up portrait of a fleet manager with a focused expression, wearing a navy blue corporate uniform. The background is a blurred high-tech logistics control room with digital screens and cool-toned blue lighting. High-end editorial photography style with crisp detail and professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQlqZrYG2gAHyvE7wTDF-98F7Kww2h5AD8-zJk3Dl41pGdBN94i2KOF8R05XD0r3B3BoVQfXMD8DPjVGdfzjmM1KhpMb5vmzO9BkvcT_v73HiQapgCmhHBrUjJSO4fuhrcLkCB2GMAnV6inJEtGG41bU8XISzmdGLhCVTjcAdZ3DsR_e9oaCKVAOtc7Sho3ueR9vLFI5TmjMeLSzPmYB3HPKMvUI1CCjK4ai6sdVtbCeiiyK_mXTespg4jCTwpd9wMHOM-pUQ7bqGx">
+</div>
+</div>
+</header>
+<!-- Screen Content -->
+<div class="p-8 flex-1 overflow-y-auto">
+<!-- Page Header -->
+<div class="flex items-end justify-between mb-8">
+<div>
+<h2 class="text-display font-display text-white">Trips &amp; Dispatch</h2>
+<p class="text-body-lg font-body-lg text-slate-400">Manage real-time logistics and delivery schedules.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold transition-all transform active:scale-95 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined">add</span>
+<span>New Trip</span>
+</button>
+</div>
+<!-- Segmented Tabs -->
+<div class="flex items-center gap-1 bg-slate-900 p-1.5 rounded-2xl w-fit mb-8 border border-slate-800 shadow-xl">
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-800 text-primary font-bold shadow-sm">
+<span>Scheduled</span>
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded-md text-label-sm">24</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all font-medium">
+<span>In-Progress</span>
+<span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md text-label-sm">12</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all font-medium">
+<span>Completed</span>
+<span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md text-label-sm">158</span>
+</button>
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all font-medium">
+<span>Cancelled</span>
+<span class="bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md text-label-sm">3</span>
+</button>
+</div>
+<div class="grid grid-cols-12 gap-8 h-[calc(100%-250px)]">
+<!-- Data Table Container -->
+<div class="col-span-8 bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl flex flex-col overflow-hidden">
+<div class="flex-1 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-800/50 border-b border-slate-800">
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-400 uppercase tracking-wider">Trip ID</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-400 uppercase tracking-wider">Route</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-400 uppercase tracking-wider">Vehicle</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-400 uppercase tracking-wider">Driver</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-400 uppercase tracking-wider">Schedule/ETA</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-slate-400 uppercase tracking-wider">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-800">
+<!-- Row 1: In Progress -->
+<tr class="hover:bg-slate-800/30 cursor-pointer transition-colors group">
+<td class="px-6 py-4 font-data-mono text-data-mono text-primary">#TRP-4921</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-bold text-white">Chicago Hub</span>
+<span class="material-symbols-outlined text-slate-600 text-sm">south</span>
+<span class="font-body-md text-slate-400">Detroit DC</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500">local_shipping</span>
+<span class="font-body-md text-white">Freightliner M2</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A close-up profile picture of a professional truck driver wearing a baseball cap and a polo shirt. The lighting is bright and outdoor, with a modern fleet vehicle in the soft-focus background. High-quality corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7GpN2iMQ8tQhXyOXpxx-Urgq5unD04oD0-th2Uot8_QhS0vxMpdGkRGk24Msu9eI6yn4iILHMycsHsY_nIppiuyyPrV1gT394Yk0sCUSQNl_SzEytPagdta4kwpmJE1auXOxG7s2sGNeTyFCCk3m0saQh4rKNZLbBluzEV2RF9mO6eUuEr2_BcEwUYNeQPwS4b-aND7O0eMAtiGoWtMvpGRmrZl6NfzGTREgREsFz1pcdsvjWG2cvgObPd52PSZ0UwXEXxfwm665y">
+</div>
+<span class="font-body-md text-white">Marcus J.</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1.5">
+<span class="text-body-md text-white">ETA: 14:30 PM</span>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%] rounded-full shadow-[0_0_8px_rgba(37,99,235,0.5)]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 bg-blue-500/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm font-bold">
+<span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+                                            Moving
+                                        </span>
+</td>
+</tr>
+<!-- Row 2: Scheduled -->
+<tr class="hover:bg-slate-800/30 cursor-pointer transition-colors group">
+<td class="px-6 py-4 font-data-mono text-data-mono text-slate-400">#TRP-4925</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-bold text-white">New York Terminal</span>
+<span class="material-symbols-outlined text-slate-600 text-sm">south</span>
+<span class="font-body-md text-slate-400">Philadelphia Hub</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500">local_shipping</span>
+<span class="font-body-md text-white">Volvo VNL 860</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of a senior logistics driver, Caucasian male with short grey hair and a friendly but professional demeanor. He is wearing a grey company uniform. Soft studio lighting on a neutral slate background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhrFaTx7t52vNfo2p3wBswGGGYwJjAlveX2Qz58avdaOj_5JDRDn1M3xi72vDhYdHX30-JKwCODu8JOSJ10GeMIknc3ZO_8QyjpqOYJ70KYLzegHUSG36gExvXgIi993qWgCf-GWv7xHyuiTFB_wWJXY5AKDeXPTBN-mYIAj0qCRT04mX7zpwSQ-6h9ChUPWbEF5Rj0FrNTg1_XdfcRTrwdesUflC5HqhiHrLPDT3XZeT4sohAncRQfuhV7sg5rRwO-tPaUWleeiOl">
+</div>
+<span class="font-body-md text-white">Sarah Chen</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="text-body-md text-slate-300">Dep: 16:00 PM</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 bg-slate-800 text-slate-400 border border-slate-700 px-3 py-1 rounded-full text-label-sm font-bold">
+<span class="w-1.5 h-1.5 bg-slate-500 rounded-full"></span>
+                                            Scheduled
+                                        </span>
+</td>
+</tr>
+<!-- Row 3: Delayed -->
+<tr class="hover:bg-slate-800/30 cursor-pointer transition-colors group bg-error/5">
+<td class="px-6 py-4 font-data-mono text-data-mono text-error">#TRP-4899</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-bold text-white">Dallas North</span>
+<span class="material-symbols-outlined text-slate-600 text-sm">south</span>
+<span class="font-body-md text-slate-400">Austin South</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500">local_shipping</span>
+<span class="font-body-md text-white">Kenworth T680</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a female driver, African American, wearing a professional navy jacket and a headset. She looks confident and expert. Lighting is bright, industrial chic environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiFa14XfZ_k3S-HJAsi3dTLjAEsVvWZWeWy0RsluFuk_8x3_KWi7Uqq7exHeaArVupnBB6RWi5I6_2F6FvC10GsT2B7XaeIPvaITa5KqDCbMxLYm-jeCpT_pN-6Op7CqpserfNttci6LthtSZlnrqQwEw8SuVvlgqAIBEq43oyUiHyJY-6bq6yJVITU8yxHXQ3mIikIcoQNm4_qx3HpJDRsOIKlVz0E46XiOY-7yoyDY6aU7x1hVmNuEgy8EdIwLzvatwob77wHdD8">
+</div>
+<span class="font-body-md text-white">Roberto F.</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1">
+<span class="text-body-md text-error">Delayed</span>
+<span class="text-label-sm text-slate-500">+45 mins</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 bg-error/10 text-error border border-error/20 px-3 py-1 rounded-full text-label-sm font-bold">
+<span class="w-1.5 h-1.5 bg-error rounded-full"></span>
+                                            Stalled
+                                        </span>
+</td>
+</tr>
+<!-- Row 4: Moving -->
+<tr class="hover:bg-slate-800/30 cursor-pointer transition-colors group">
+<td class="px-6 py-4 font-data-mono text-data-mono text-primary">#TRP-4912</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-body-md font-bold text-white">Phoenix Storage</span>
+<span class="material-symbols-outlined text-slate-600 text-sm">south</span>
+<span class="font-body-md text-slate-400">Tucson Depot</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500">local_shipping</span>
+<span class="font-body-md text-white">Peterbilt 579</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-700 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of an Asian female driver with a professional and friendly look, wearing a company branded polo. The background is a clean, modern parking lot with several logistics vans. Sharp focus, high contrast, blue and slate tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5U1GR94dfURWa77rFxIF-Il2ITbO5UO9rGM2Ke0mQNJJcpH6sNe690t7CWsV2WAQaB4h-WkE7Q6o-vjNL30iQ8oLF8F8Ydw-h64lp9RTPIdmqJMY_6MzmobyPlqjTqRO6YCSjzIRbsfi27x9unpbQffHcgPDjV0G4G-yBYhZ-morC2bj4tjK-abSU0b2NpnQWcs1OnTLT6SXPgOFqPLVoqPG_8cpWeDNU7wPpL4rAodviyem4Ot2lQsSIx7_riP3SxVdkK12nl6Q_">
+</div>
+<span class="font-body-md text-white">Elena S.</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1.5">
+<span class="text-body-md text-white">ETA: 13:15 PM</span>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[88%] rounded-full shadow-[0_0_8px_rgba(37,99,235,0.5)]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 bg-blue-500/10 text-primary border border-primary/20 px-3 py-1 rounded-full text-label-sm font-bold">
+<span class="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
+                                            Moving
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination-style footer -->
+<div class="px-6 py-4 bg-slate-800/30 border-t border-slate-800 flex items-center justify-between">
+<span class="text-body-md text-slate-400">Showing 1-4 of 24 Scheduled Trips</span>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Side Preview Panel -->
+<div class="col-span-4 flex flex-col gap-6">
+<!-- Route Preview Map Card -->
+<div class="bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl p-5 flex flex-col h-full overflow-hidden relative group">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-headline-md text-white">Route Preview</h3>
+<span class="bg-slate-800 text-slate-400 px-3 py-1 rounded-full text-label-sm">#TRP-4921</span>
+</div>
+<!-- Mini Map Preview -->
+<div class="flex-1 rounded-xl bg-slate-800 overflow-hidden relative border border-slate-700">
+<img class="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-500 cursor-crosshair" data-location="Chicago" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABKQvIEp_hovgRiZCI18EyHjeFJxSJNLKnDP45ZuIkZC9mGHsZLs4AdqPQ7ZBX9groW29Ec885wucvKI46XrIOQBoeEoLkhrGAmK0yr5Rg4Pxa93VAezcPXJp8mVfvZ2Kq7pyGs_FpnTgXdb8gPGmZQGfgRDApQ04H51VmSOLl6_fpLaigmx_oMMXYJ6qNXcslkd966TXyYMJ4kym8_xpGRJGtgW7adv5bZXhJyJKbKjWYhoMPBoyKgNTHsyGzd67Zgl1bwiW9KX3u">
+<!-- Visual Overlays (Simulating Map UI) -->
+<div class="absolute inset-0 pointer-events-none p-4 flex flex-col justify-between">
+<div class="flex justify-end">
+<div class="bg-slate-900/90 backdrop-blur-md p-2 rounded-lg border border-slate-700 space-y-2 pointer-events-auto">
+<button class="block material-symbols-outlined text-slate-300 hover:text-primary">add</button>
+<div class="h-px bg-slate-700"></div>
+<button class="block material-symbols-outlined text-slate-300 hover:text-primary">remove</button>
+</div>
+</div>
+<div class="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700 pointer-events-auto">
+<div class="flex items-center gap-3 mb-3">
+<div class="p-2 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">near_me</span>
+</div>
+<div>
+<p class="text-label-sm text-slate-400">Current Velocity</p>
+<p class="text-body-lg font-bold text-white">64.2 mph</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-tertiary-container/10 text-tertiary-fixed-dim">
+<span class="material-symbols-outlined">timer</span>
+</div>
+<div>
+<p class="text-label-sm text-slate-400">Next Stop</p>
+<p class="text-body-lg font-bold text-white">~ 42 mins</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Animated Pulse Dot (Current Position) -->
+<div class="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2">
+<span class="relative flex h-4 w-4">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-4 w-4 bg-primary shadow-[0_0_15px_rgba(37,99,235,1)] border-2 border-white"></span>
+</span>
+</div>
+</div>
+<!-- Trip Statistics in Sidebar -->
+<div class="mt-6 space-y-4">
+<div class="flex justify-between items-center text-body-md">
+<span class="text-slate-400">Total Distance</span>
+<span class="text-white font-bold">294.2 mi</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<span class="text-slate-400">Fuel Projection</span>
+<span class="text-white font-bold">38.5 gal</span>
+</div>
+<button class="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-xl border border-slate-700 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">open_in_new</span>
+                                Full Route Analysis
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Micro-Interaction Scripts -->
+<script>
+        // Placeholder for row selection interaction
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                document.querySelectorAll('tbody tr').forEach(r => r.classList.remove('bg-slate-800/50', 'border-l-4', 'border-primary'));
+                row.classList.add('bg-slate-800/50', 'border-l-4', 'border-primary');
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FleetCommand | Compliance Monitoring</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #434655; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #737686; }
+        .glass-panel {
+            background: rgba(46, 48, 57, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(195, 198, 215, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                "on-tertiary-fixed-variant": "#7d2d00",
+                "surface-dim": "#d9d9e5",
+                "on-primary-fixed-variant": "#003ea8",
+                "surface-container-low": "#f3f3fe",
+                "inverse-primary": "#b4c5ff",
+                "error-container": "#ffdad6",
+                "surface-bright": "#faf8ff",
+                "on-secondary-fixed": "#0b1c30",
+                "tertiary-container": "#bc4800",
+                "on-error": "#ffffff",
+                "secondary-fixed-dim": "#b7c8e1",
+                "primary-fixed-dim": "#b4c5ff",
+                "inverse-on-surface": "#f0f0fb",
+                "on-tertiary": "#ffffff",
+                "error": "#ba1a1a",
+                "on-primary-fixed": "#00174b",
+                "tertiary": "#943700",
+                "on-tertiary-container": "#ffede6",
+                "inverse-surface": "#2e3039",
+                "on-background": "#191b23",
+                "on-surface-variant": "#434655",
+                "on-primary-container": "#eeefff",
+                "surface-variant": "#e1e2ed",
+                "secondary": "#505f76",
+                "on-secondary-fixed-variant": "#38485d",
+                "surface-container-lowest": "#ffffff",
+                "on-surface": "#191b23",
+                "surface-container": "#ededf9",
+                "secondary-container": "#d0e1fb",
+                "on-tertiary-fixed": "#360f00",
+                "on-primary": "#ffffff",
+                "outline": "#737686",
+                "primary-container": "#2563eb",
+                "background": "#faf8ff",
+                "surface-tint": "#0053db",
+                "tertiary-fixed": "#ffdbcd",
+                "on-secondary-container": "#54647a",
+                "surface-container-high": "#e7e7f3",
+                "primary": "#004ac6",
+                "on-secondary": "#ffffff",
+                "on-error-container": "#93000a",
+                "primary-fixed": "#dbe1ff",
+                "surface": "#faf8ff",
+                "outline-variant": "#c3c6d7",
+                "tertiary-fixed-dim": "#ffb596",
+                "secondary-fixed": "#d3e4fe",
+                "surface-container-highest": "#e1e2ed"
+              },
+              "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+              },
+              "spacing": {
+                "gutter": "24px",
+                "sidebar_collapsed": "80px",
+                "component_gap": "16px",
+                "sidebar_width": "280px",
+                "container_padding": "32px",
+                "header_height": "64px"
+              },
+              "fontFamily": {
+                "label-sm": ["Inter"],
+                "headline-md": ["Inter"],
+                "display": ["Inter"],
+                "headline-lg": ["Inter"],
+                "data-mono": ["Inter"],
+                "body-md": ["Inter"],
+                "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "display": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+</head>
+<body class="bg-inverse-surface text-on-primary-fixed-variant selection:bg-primary selection:text-white overflow-hidden">
+<!-- Left Sidebar (SideNavBar Anchor) -->
+<aside class="fixed left-0 top-0 h-full w-sidebar_width bg-surface-container-highest dark:bg-surface-container-highest border-r border-outline dark:border-outline shadow-sm flex flex-col py-4 z-20">
+<div class="px-6 mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed leading-none">FleetCommand</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mt-1">Mission Control</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-3">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-label-sm text-label-sm">Live Tracking</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-label-sm text-label-sm">Vehicles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Drivers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">route</span>
+<span class="font-label-sm text-label-sm">Trips</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg border-l-4 border-primary bg-secondary-container text-on-secondary-container font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-label-sm">Compliance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-sm text-label-sm">Reports</span>
+</a>
+<div class="pt-4 mt-4 border-t border-outline-variant/30 px-4">
+<p class="text-[10px] font-bold text-outline uppercase mb-2">System</p>
+<a class="flex items-center gap-3 py-2 text-on-surface-variant hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</div>
+</nav>
+<div class="px-6 mt-auto">
+<div class="bg-primary/10 rounded-xl p-4 border border-primary/20">
+<div class="flex items-center justify-between mb-2">
+<p class="text-[10px] font-bold text-primary uppercase">Storage</p>
+<p class="text-[10px] text-primary">82%</p>
+</div>
+<div class="h-1.5 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[82%]"></div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area Container -->
+<main class="ml-sidebar_width w-[calc(100%-theme(spacing.sidebar_width))] h-screen flex flex-col relative overflow-hidden">
+<!-- Top Bar (TopNavBar Anchor) -->
+<header class="h-header_height w-full bg-surface-container-highest dark:bg-surface-container-highest flex justify-between items-center px-container_padding border-b border-outline shadow-sm z-10">
+<div class="flex items-center gap-6">
+<div class="relative w-80 group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-md font-body-md focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/50" placeholder="Search vehicles, documents, or IDs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high text-on-surface-variant">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-label-sm font-label-sm text-on-surface">Alex Rivera</p>
+<p class="text-[10px] text-on-surface-variant font-medium">Compliance Officer</p>
+</div>
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-on-primary-container">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-gutter bg-surface-dim">
+<!-- Critical Alert Banner Section -->
+<div class="mb-gutter space-y-3">
+<div class="bg-error/10 border border-error/20 p-4 rounded-xl flex items-center gap-4 animate-pulse">
+<div class="w-10 h-10 rounded-full bg-error flex items-center justify-center text-white">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-error text-body-md">CRITICAL: 3 Insurance Certificates Expired</h4>
+<p class="text-on-surface-variant text-body-md">Commercial Liability for Fleet ID: NY-992, TX-441, and CA-102 has expired. Operational risk is currently HIGH.</p>
+</div>
+<button class="px-4 py-2 bg-error text-white font-bold rounded-lg text-label-sm hover:brightness-110 transition-all">RENEW NOW</button>
+</div>
+</div>
+<!-- KPI Card Grid -->
+<div class="grid grid-cols-4 gap-gutter mb-gutter">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">description</span>
+</div>
+</div>
+<p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Total Documents</p>
+<h2 class="text-display font-display text-on-surface mt-1">412</h2>
+<div class="mt-4 flex items-center gap-1 text-[10px] text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">info</span>
+<span>Across all 88 active vehicles</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<span class="text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-full">+2% vs LW</span>
+</div>
+<p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Valid &amp; Compliant</p>
+<h2 class="text-display font-display text-emerald-600 mt-1">386</h2>
+<div class="h-1 w-full bg-surface-container-low rounded-full mt-4">
+<div class="h-full bg-emerald-500 w-[93.6%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined">timelapse</span>
+</div>
+<span class="text-amber-600 text-[10px] font-bold bg-amber-50 px-2 py-1 rounded-full">Next 30 Days</span>
+</div>
+<p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Expiring Soon</p>
+<h2 class="text-display font-display text-amber-600 mt-1">23</h2>
+<div class="h-1 w-full bg-surface-container-low rounded-full mt-4">
+<div class="h-full bg-amber-500 w-[5.5%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined">gpp_maybe</span>
+</div>
+<span class="text-error text-[10px] font-bold bg-error-container px-2 py-1 rounded-full">Immediate Action</span>
+</div>
+<p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Expired / Risk</p>
+<h2 class="text-display font-display text-error mt-1">3</h2>
+<div class="h-1 w-full bg-surface-container-low rounded-full mt-4">
+<div class="h-full bg-error w-[0.9%]"></div>
+</div>
+</div>
+</div>
+<!-- Main Registry & Sidebar Layout -->
+<div class="flex gap-gutter items-start">
+<!-- Compliance Registry Table -->
+<div class="flex-1 glass-panel rounded-2xl overflow-hidden border border-outline-variant/30 flex flex-col min-h-[600px]">
+<div class="p-6 border-b border-outline-variant/30 flex items-center justify-between bg-surface-container-highest/20">
+<div class="flex items-center gap-4">
+<h3 class="font-headline-md text-headline-md text-on-surface">Compliance Registry</h3>
+<div class="flex bg-surface-container-high rounded-lg p-1">
+<button class="px-4 py-1.5 bg-surface-container-lowest shadow-sm text-primary font-bold rounded-md text-label-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">table_chart</span> Table
+                                </button>
+<button class="px-4 py-1.5 text-on-surface-variant font-medium rounded-md text-label-sm flex items-center gap-2 hover:text-on-surface">
+<span class="material-symbols-outlined text-lg">calendar_month</span> Calendar
+                                </button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="px-4 py-2 bg-primary text-white font-bold rounded-lg text-label-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">cloud_upload</span> Bulk Upload
+                            </button>
+</div>
+</div>
+<div class="flex-1 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/30">Vehicle / Fleet ID</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/30">Document Type</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/30">Expiry Date</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/30">Status</th>
+<th class="px-6 py-4 text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant/30 text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Insurance Group -->
+<tr class="bg-primary/5">
+<td class="px-6 py-2" colspan="5">
+<div class="flex items-center gap-2 text-primary font-bold text-label-sm">
+<span class="material-symbols-outlined text-lg">verified</span> INSURANCE (124)
+                                        </div>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface">NY-992-FX</td>
+<td class="px-6 py-4 text-body-md text-on-surface">Commercial Liability</td>
+<td class="px-6 py-4 text-body-md text-error font-bold italic">Oct 12, 2023</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-error/10 text-error rounded-full text-[10px] font-bold border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> EXPIRED
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary font-bold text-label-sm hover:underline">Renew</button>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface">TX-441-AM</td>
+<td class="px-6 py-4 text-body-md text-on-surface">Cargo Insurance</td>
+<td class="px-6 py-4 text-body-md text-amber-600 font-bold">Nov 18, 2023</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-600 rounded-full text-[10px] font-bold border border-amber-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 5 DAYS LEFT
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary font-bold text-label-sm hover:underline">Update</button>
+</td>
+</tr>
+<!-- Permits Group -->
+<tr class="bg-surface-container-low/50">
+<td class="px-6 py-2" colspan="5">
+<div class="flex items-center gap-2 text-on-surface-variant font-bold text-label-sm">
+<span class="material-symbols-outlined text-lg">task</span> PERMITS (248)
+                                        </div>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface">CA-882-LQ</td>
+<td class="px-6 py-4 text-body-md text-on-surface">IFTA Tax Permit</td>
+<td class="px-6 py-4 text-body-md text-on-surface-variant">Mar 24, 2024</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-600 rounded-full text-[10px] font-bold border border-emerald-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> COMPLIANT
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant font-bold text-label-sm hover:text-on-surface">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface">GA-102-RS</td>
+<td class="px-6 py-4 text-body-md text-on-surface">Oversize Load Permit</td>
+<td class="px-6 py-4 text-body-md text-on-surface-variant">Jan 15, 2024</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-600 rounded-full text-[10px] font-bold border border-emerald-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> COMPLIANT
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant font-bold text-label-sm hover:text-on-surface">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Fitness Group -->
+<tr class="bg-surface-container-low/50">
+<td class="px-6 py-2" colspan="5">
+<div class="flex items-center gap-2 text-on-surface-variant font-bold text-label-sm">
+<span class="material-symbols-outlined text-lg">build_circle</span> FITNESS (40)
+                                        </div>
+</td>
+</tr>
+<tr class="group hover:bg-surface-container-high transition-colors">
+<td class="px-6 py-4 font-data-mono text-data-mono text-on-surface">FL-554-ZZ</td>
+<td class="px-6 py-4 text-body-md text-on-surface">Annual DOT Inspection</td>
+<td class="px-6 py-4 text-body-md text-amber-600 font-bold">Nov 12, 2023</td>
+<td class="px-6 py-4">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-600 rounded-full text-[10px] font-bold border border-amber-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 11 DAYS LEFT
+                                        </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary font-bold text-label-sm hover:underline">Schedule</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-outline-variant/30 flex items-center justify-between text-on-surface-variant text-label-sm">
+<span>Showing 1-10 of 412 records</span>
+<div class="flex gap-1">
+<button class="p-1.5 rounded border border-outline-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="p-1.5 rounded border border-outline-variant bg-primary text-white">1</button>
+<button class="p-1.5 rounded border border-outline-variant hover:bg-surface-container-high transition-colors">2</button>
+<button class="p-1.5 rounded border border-outline-variant hover:bg-surface-container-high transition-colors">3</button>
+<button class="p-1.5 rounded border border-outline-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Sidebar Charts/Timeline -->
+<aside class="w-[340px] space-y-gutter">
+<!-- Risk Distribution -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm">
+<h4 class="font-headline-md text-on-surface mb-6">Risk Distribution</h4>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between mb-2">
+<span class="text-label-sm text-on-surface-variant uppercase">Insurance</span>
+<span class="text-label-sm font-bold text-on-surface">12% At Risk</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-error w-[12%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-2">
+<span class="text-label-sm text-on-surface-variant uppercase">Permits</span>
+<span class="text-label-sm font-bold text-on-surface">4% At Risk</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-amber-500 w-[4%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between mb-2">
+<span class="text-label-sm text-on-surface-variant uppercase">Medical Cards</span>
+<span class="text-label-sm font-bold text-on-surface">0.5% At Risk</span>
+</div>
+<div class="h-2 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 w-[0.5%]"></div>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 py-2 text-primary font-bold text-label-sm border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors">View Deep Risk Report</button>
+</div>
+<!-- Action Timeline -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm">
+<h4 class="font-headline-md text-on-surface mb-6">Action Timeline</h4>
+<div class="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant">
+<div class="relative pl-8 group">
+<div class="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-error border-2 border-surface-container-lowest z-10"></div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Yesterday, 4:30 PM</p>
+<p class="text-body-md text-on-surface font-semibold">Insurance Expired</p>
+<p class="text-body-md text-on-surface-variant mt-1">Vehicle ID: NY-992-FX auto-flagged for ground stop.</p>
+</div>
+<div class="relative pl-8 group">
+<div class="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-primary border-2 border-surface-container-lowest z-10"></div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Today, 9:15 AM</p>
+<p class="text-body-md text-on-surface font-semibold">Renewal Initiated</p>
+<p class="text-body-md text-on-surface-variant mt-1">Broker contacted for GA-102-RS permit renewal.</p>
+</div>
+<div class="relative pl-8 group">
+<div class="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-surface-container-lowest z-10"></div>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Scheduled: Nov 20</p>
+<p class="text-body-md text-on-surface font-semibold">DOT Inspection</p>
+<p class="text-body-md text-on-surface-variant mt-1">Confirmed appointment at Atlanta Hub for FL-554.</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<!-- Contextual Floating Action Button -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-30 group">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">add</span>
+<span class="absolute right-16 bg-inverse-surface text-on-surface px-3 py-1.5 rounded shadow text-sm opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap">Add New Document</span>
+</button>
+<script>
+        // Simple Micro-interaction for row hovering status effects
+        document.querySelectorAll('tr.group').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transform = 'translateX(4px)';
+            });
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-primary/50');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-primary/50');
+        });
+    </script>
+</body></html>

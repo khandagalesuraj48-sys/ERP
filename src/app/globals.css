@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-inter: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bg-main: #F5F7FA;
+  --bg-glass: rgba(255, 255, 255, 0.70);
+  --border-glass: rgba(255, 255, 255, 0.65);
+  --shadow-glass: 0 8px 30px rgba(15, 23, 42, 0.06);
+  --border-subtle: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --color-primary: #2563EB;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-inter);
+  background-color: #F5F7FA;
+  color: #0F172A;
+  font-feature-settings: "tnum" on, "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Material Symbols icon defaults */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 20;
+  display: inline-block;
+  vertical-align: middle;
+  user-select: none;
+}
+
+/* Custom scrollbar — clean minimal Apple/Linear aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+@layer components {
+  /* Glass Surface — visionOS / Modern Glassmorphism standard */
+  .glass-surface {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.70);
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Glass Card — KPI cards and floating summary panels */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+    border-radius: 0.75rem;
+  }
+
+  /* Standard Solid Card — Tables and high-density operational data */
+  .card {
+    @apply bg-white rounded-xl border border-slate-200/80 shadow-[0_1px_3px_0_rgba(15,23,42,0.04)] transition-all duration-150;
+  }
+
+  /* Status Pill — subtle background + crisp border + readable typography */
+  .status-pill {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors;
+  }
+
+  /* Table Header */
+  .table-head {
+    @apply px-4 py-2.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-left bg-slate-50/80 border-b border-slate-200 select-none;
+  }
+
+  /* Table Row with smooth micro-hover */
+  .table-row {
+    @apply border-b border-slate-100 hover:bg-slate-50/70 transition-colors duration-150 text-[13px] text-slate-900;
+  }
+
+  /* Input fields */
+  .form-input {
+    @apply w-full h-9 px-3 text-[13px] text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-150 disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed;
+  }
+
+  /* Select fields */
+  .form-select {
+    @apply w-full h-9 px-3 text-[13px] text-slate-900 bg-white border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-150 disabled:bg-slate-50 disabled:text-slate-500;
+  }
+
+  /* Primary Button with subtle motion */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 h-8 px-3.5 text-[13px] font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+
+  /* Secondary Button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 h-8 px-3.5 text-[13px] font-medium text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-300 rounded-lg shadow-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+  }
+}
+
+/* ========================================================================== */
+/* PROFESSIONAL ERP REPORT ENGINE — DEDICATED PRINT STYLES                   */
+/* High-contrast, black/white printer friendly, repeated headers, no web UI  */
+/* ========================================================================== */
+@media print {
+  /* Hide non-print web elements */
+  aside,
+  header,
+  nav,
+  button,
+  .no-print,
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Reset layout constraints */
+  html,
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 10pt !important;
+    overflow: visible !important;
+  }
+
+  /* Print container takes full page */
+  .print-document-root {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Table styling for sharp print output */
+  .erp-print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .erp-print-table th,
+  .erp-print-table td {
+    border: 1px solid #CBD5E1 !important;
+    padding: 4px 6px !important;
+    font-size: 8.5pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .erp-print-table th {
+    background-color: #F1F5F9 !important;
+    color: #0F172A !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  /* Repeat table headers on every page */
+  thead {
+    display: table-header-group !important;
+  }
+
+  /* Prevent row splitting */
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Signatures section */
+  .erp-print-signatures {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-top: 24px !important;
+  }
+
+  /* Footer */
+  .erp-print-footer {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    font-size: 8pt !important;
+    color: #64748B !important;
+    border-top: 1px solid #E2E8F0 !important;
+    padding-top: 4px !important;
+  }
+}

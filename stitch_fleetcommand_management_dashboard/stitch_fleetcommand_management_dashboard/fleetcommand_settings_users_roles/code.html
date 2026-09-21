@@ -1,0 +1,394 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>FleetCommand - Users &amp; Roles</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .data-grid-scrollbar::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        .data-grid-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .data-grid-scrollbar::-webkit-scrollbar-thumb {
+            background: #434655;
+            border-radius: 10px;
+        }
+        .glass-panel {
+            background: rgba(25, 27, 35, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(195, 198, 215, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md overflow-hidden">
+<!-- Sidebar Navigation (From JSON Source of Truth) -->
+<aside class="w-sidebar_width h-screen fixed left-0 top-0 border-r border-outline-variant bg-surface-container-lowest flex flex-col py-4 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim">FleetCommand</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-widest mt-1">Mission Control</p>
+</div>
+<nav class="flex-1 overflow-y-auto data-grid-scrollbar space-y-1">
+<!-- Active State Logic: Settings page, so "Settings" tab is active -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="location_on">location_on</span>
+<span class="font-body-md">Live Tracking</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
+<span class="font-body-md">Vehicles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-body-md">Drivers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="route">route</span>
+<span class="font-body-md">Trips &amp; Dispatch</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-body-md">Maintenance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="local_gas_station">local_gas_station</span>
+<span class="font-body-md">Fuel &amp; Cost</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-body-md">Compliance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="font-body-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 border-l-4 border-primary bg-secondary-container text-on-secondary-container font-bold scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4 pt-4 border-t border-outline-variant">
+<div class="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-container-high cursor-pointer transition-colors">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold">
+                    JD
+                </div>
+<div>
+<p class="font-label-sm text-on-surface">James Dalton</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">Fleet Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="h-header_height fixed top-0 right-0 z-40 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between px-gutter w-[calc(100%-theme(spacing.sidebar_width))] ml-sidebar_width shadow-sm">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-body-md focus:ring-2 focus:ring-primary outline-none" placeholder="Search system settings..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-opacity" data-icon="calendar_today">calendar_today</span>
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary transition-opacity" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</div>
+</div>
+<div class="h-8 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A professional high-resolution profile portrait of a middle-aged fleet manager with a focused expression, wearing a sleek charcoal grey corporate polo. The background is a blurred high-tech logistics control room with glowing blue screens and data visualizations. The lighting is crisp, professional, and highlights a high-contrast corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmYK48Cw6lBx1_quF4d8FRenZBuPIfH7bQ66989N14d1PMEQNwxI9UsJNtpEUk8gvzBtzpVNDysJkbIjRl38kfEftkeVccwZFm_VnW82jQgI-dvMnJaAmboWSvrGnMtP8TP77RlPdvBspv1o4id4pP0KkIjhQOQ9RlEB1lIzi316TPoxS-OpOxvykDPHkaZSsB_FZpcF8vb-A7bB2d5Y-TG9K79gBn8tIvvbQ2hDfuQlj8adHtmLDZgkJ41X-76WkN80zos-G4GxKz">
+<span class="font-label-sm text-on-surface">Fleet Manager</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-header_height ml-sidebar_width h-screen overflow-hidden flex">
+<!-- Settings Sub-Nav (Bento-style Sidebar) -->
+<div class="w-64 border-r border-outline-variant bg-surface-container-low flex flex-col p-4 space-y-2">
+<h2 class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-widest px-2 mb-4">Settings</h2>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-label-sm">Profile</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-on-primary font-bold shadow-md" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-sm">Users &amp; Roles</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="warehouse">warehouse</span>
+<span class="font-label-sm">Depots</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="polyline">polyline</span>
+<span class="font-label-sm">Geofences</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+<span class="font-label-sm">Alert Rules</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="integration_instructions">integration_instructions</span>
+<span class="font-label-sm">Integrations</span>
+</a>
+</div>
+<!-- Scrollable Workspace -->
+<div class="flex-1 overflow-y-auto data-grid-scrollbar p-gutter bg-background">
+<div class="max-w-6xl mx-auto space-y-gutter">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Users &amp; Roles</h2>
+<p class="text-on-surface-variant mt-1">Manage system access, define custom roles, and assign depot permissions.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                        Invite User
+                    </button>
+</div>
+<!-- Users Table Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-headline-md text-headline-md">Active Users</h3>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+<button class="p-2 hover:bg-surface-container-highest rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Name</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Email</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Role</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Depot</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-6 py-3 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Last Active</th>
+<th class="px-6 py-3"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- User Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">SM</div>
+<span class="font-body-md font-medium text-on-surface">Sarah Miller</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-data-mono text-data-mono">s.miller@fleetcommand.com</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-tight border border-primary/20">Administrator</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Global</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="w-1.5 h-1.5 bg-primary rounded-full"></span>
+<span class="text-xs font-bold uppercase">Online</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant text-xs">2 mins ago</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant cursor-pointer" data-icon="more_vert">more_vert</span>
+</td>
+</tr>
+<!-- User Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed flex items-center justify-center font-bold text-xs">RJ</div>
+<span class="font-body-md font-medium text-on-surface">Robert Jenkins</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-data-mono text-data-mono">r.jenkins@fleetcommand.com</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-tight border border-outline-variant">Dispatch Mgr</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">London North</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="w-1.5 h-1.5 bg-outline rounded-full"></span>
+<span class="text-xs font-bold uppercase">Away</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant text-xs">4 hours ago</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant cursor-pointer" data-icon="more_vert">more_vert</span>
+</td>
+</tr>
+<!-- User Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed-dim text-on-tertiary-fixed flex items-center justify-center font-bold text-xs">AK</div>
+<span class="font-body-md font-medium text-on-surface">Anita Kapoor</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-data-mono text-data-mono">a.kapoor@fleetcommand.com</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 rounded bg-tertiary-container/10 text-tertiary text-[10px] font-bold uppercase tracking-tight border border-tertiary/20">Maintenance</span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Birmingham Hub</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="w-1.5 h-1.5 bg-primary rounded-full"></span>
+<span class="text-xs font-bold uppercase">Online</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant text-xs">Just now</td>
+<td class="px-6 py-4 text-right">
+<span class="material-symbols-outlined opacity-0 group-hover:opacity-100 transition-opacity text-on-surface-variant cursor-pointer" data-icon="more_vert">more_vert</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-3 bg-surface-container-low border-t border-outline-variant flex justify-between items-center">
+<span class="text-xs text-on-surface-variant">Showing 3 of 42 users</span>
+<div class="flex gap-1">
+<button class="p-1 hover:bg-surface-container-highest rounded border border-outline-variant text-on-surface-variant"><span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span></button>
+<button class="px-2 py-1 bg-primary text-on-primary rounded text-xs font-bold">1</button>
+<button class="px-2 py-1 hover:bg-surface-container-highest rounded text-xs text-on-surface-variant">2</button>
+<button class="px-2 py-1 hover:bg-surface-container-highest rounded text-xs text-on-surface-variant">3</button>
+<button class="p-1 hover:bg-surface-container-highest rounded border border-outline-variant text-on-surface-variant"><span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Roles & Permissions Matrix -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="px-6 py-5 border-b border-outline-variant bg-surface-container-low">
+<div class="flex justify-between items-center">
+<div>
+<h3 class="font-headline-md text-headline-md">Role Permissions Matrix</h3>
+<p class="text-sm text-on-surface-variant mt-1">Define granular access levels for different user roles across the FleetCommand platform.</p>
+</div>
+<button class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+                                Create Custom Role
+                            </button>
+</div>
+</div>
+<div class="overflow-x-auto data-grid-scrollbar">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase border-b border-outline-variant sticky left-0 bg-surface-container-low z-10">Permission Group</th>
+<th class="px-4 py-4 text-center font-label-sm text-label-sm text-primary uppercase border-b border-outline-variant">Admin</th>
+<th class="px-4 py-4 text-center font-label-sm text-label-sm text-on-surface-variant uppercase border-b border-outline-variant">Dispatch</th>
+<th class="px-4 py-4 text-center font-label-sm text-label-sm text-on-surface-variant uppercase border-b border-outline-variant">Maintenance</th>
+<th class="px-4 py-4 text-center font-label-sm text-label-sm text-on-surface-variant uppercase border-b border-outline-variant">Finance</th>
+<th class="px-4 py-4 text-center font-label-sm text-label-sm text-on-surface-variant uppercase border-b border-outline-variant">Viewer</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Group: Fleet Operations -->
+<tr class="bg-surface-container-low/30">
+<td class="px-6 py-2 font-bold text-[10px] text-on-surface-variant uppercase tracking-widest" colspan="6">Fleet Operations</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium text-on-surface sticky left-0 bg-surface-container-lowest z-10">View Live Tracking</td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium text-on-surface sticky left-0 bg-surface-container-lowest z-10">Assign Drivers to Vehicles</td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+</tr>
+<!-- Group: Administrative -->
+<tr class="bg-surface-container-low/30">
+<td class="px-6 py-2 font-bold text-[10px] text-on-surface-variant uppercase tracking-widest" colspan="6">Administrative</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium text-on-surface sticky left-0 bg-surface-container-lowest z-10">Manage Users &amp; Permissions</td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium text-on-surface sticky left-0 bg-surface-container-lowest z-10">Edit Billing &amp; Subscriptions</td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+</tr>
+<!-- Group: Maintenance -->
+<tr class="bg-surface-container-low/30">
+<td class="px-6 py-2 font-bold text-[10px] text-on-surface-variant uppercase tracking-widest" colspan="6">Maintenance</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-medium text-on-surface sticky left-0 bg-surface-container-lowest z-10">Create Service Schedules</td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+<td class="px-4 py-4 text-center"><span class="material-symbols-outlined text-outline-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="h-10"></div> <!-- Bottom Spacer -->
+</div>
+</div>
+</main>
+<!-- Success Toast Notification (Hidden by default) -->
+<div class="fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-300 z-50" id="toast">
+<div class="bg-inverse-surface text-inverse-on-surface px-6 py-3 rounded-lg shadow-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="check_circle">check_circle</span>
+<span class="font-medium">Invitation sent successfully</span>
+</div>
+</div>
+<script>
+        // Micro-interactions
+        const inviteBtn = document.querySelector('button:contains("Invite User")');
+        if(inviteBtn) {
+            inviteBtn.addEventListener('click', () => {
+                const toast = document.getElementById('toast');
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            });
+        }
+
+        // Custom selector for text contains (Helper for the demo)
+        window.addEventListener('DOMContentLoaded', () => {
+           // Interactive hover effects for table rows
+           const rows = document.querySelectorAll('tbody tr');
+           rows.forEach(row => {
+               row.addEventListener('mouseenter', () => {
+                   row.style.transform = 'translateX(4px)';
+               });
+               row.addEventListener('mouseleave', () => {
+                   row.style.transform = 'translateX(0px)';
+               });
+           });
+        });
+    </script>
+</body></html>

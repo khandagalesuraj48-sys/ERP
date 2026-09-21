@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FleetCommand | Trip Detail &amp; Route Playback</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "surface-dim": "#d9d9e5",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "surface-container-low": "#f3f3fe",
+                        "inverse-primary": "#b4c5ff",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#faf8ff",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-container": "#bc4800",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#f0f0fb",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#00174b",
+                        "tertiary": "#943700",
+                        "on-tertiary-container": "#ffede6",
+                        "inverse-surface": "#2e3039",
+                        "on-background": "#191b23",
+                        "on-surface-variant": "#434655",
+                        "on-primary-container": "#eeefff",
+                        "surface-variant": "#e1e2ed",
+                        "secondary": "#505f76",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191b23",
+                        "surface-container": "#ededf9",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-primary": "#ffffff",
+                        "outline": "#737686",
+                        "primary-container": "#2563eb",
+                        "background": "#faf8ff",
+                        "surface-tint": "#0053db",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-secondary-container": "#54647a",
+                        "surface-container-high": "#e7e7f3",
+                        "primary": "#004ac6",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#dbe1ff",
+                        "surface": "#faf8ff",
+                        "outline-variant": "#c3c6d7",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "secondary-fixed": "#d3e4fe",
+                        "surface-container-highest": "#e1e2ed"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "sidebar_collapsed": "80px",
+                        "component_gap": "16px",
+                        "sidebar_width": "280px",
+                        "container_padding": "32px",
+                        "header_height": "64px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "data-mono": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; overflow: hidden; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .map-gradient-overlay { background: linear-gradient(to bottom, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0) 20%, rgba(15, 23, 42, 0) 80%, rgba(15, 23, 42, 0.9) 100%); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .playback-progress { width: 45%; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-row overflow-hidden">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-sidebar_width bg-surface-container-highest dark:bg-surface-container-highest border-r border-outline-variant dark:border-outline shadow-sm flex flex-col py-4 z-50">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed leading-tight">FleetCommand</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold opacity-70">Mission Control</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<div class="px-3">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-label-sm text-label-sm">Live Tracking</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 border-l-4 border-primary bg-secondary-container text-on-secondary-container font-bold rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">route</span>
+<span class="font-label-sm text-label-sm">Trips</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-label-sm text-label-sm">Vehicles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Drivers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-sm text-label-sm">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</div>
+</nav>
+<div class="px-6 pt-4 border-t border-outline-variant">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full border border-primary/20" data-alt="Professional headshot of a fleet manager, focused expression, cinematic lighting, corporate high-end aesthetic, slate grey background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9XZCGSUYWb83bsgs-4hSJIp3cMWRqlzQ7Z-jLK7eBiN88rnbFp76ks53arVO-ADfyn6LSekLLhDsfyxil_GmrOji-yXHTBjuhP3knLxfoVXY_p-UMZZy8BVQ_zqNnnWORAU8N7fM5Q9X2sLVbLjywiC7ZCLXkTymNxZ6ybAg9tsU9I3egtxFQ56AbR0PtC8xIMUb_EcQ38GS_-9nTEPSRh2_26UxYYlQ0-FQRWZVTjZLly4VOYj5QjtJhkZDkQ1qm4owWRlFBUwui"/>
+<div class="overflow-hidden">
+<p class="text-on-surface font-bold text-sm truncate">Marcus Chen</p>
+<p class="text-on-surface-variant text-[11px] truncate">Senior Logistics Lead</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 ml-[280px] flex flex-col h-full bg-background dark:bg-[#0f172a] relative">
+<!-- TopNavBar Anchor -->
+<header class="h-header_height flex justify-between items-center px-container_padding border-b border-outline-variant dark:border-slate-800 bg-surface dark:bg-slate-900/50 backdrop-blur-md z-20">
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div>
+<h2 class="font-headline-md text-headline-md font-black text-primary dark:text-primary-fixed">TRIP #99420-B</h2>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-tighter">Vehicle: TX-FLT-098 • Driver: Sarah Jenkins</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex bg-slate-800/50 border border-slate-700 rounded-full px-4 py-1.5 items-center gap-2">
+<span class="material-symbols-outlined text-sm text-slate-400">search</span>
+<input class="bg-transparent border-none text-sm text-slate-200 focus:ring-0 w-48" placeholder="Search coordinates..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-primary transition-colors">help_outline</span>
+</div>
+</div>
+</header>
+<!-- Contextual Shell -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Map Area -->
+<div class="flex-1 relative bg-slate-950">
+<!-- Map Placeholder -->
+<div class="absolute inset-0 z-0" data-alt="A high-resolution dark mode satellite map showing a complex urban highway system at night. Glowing blue and cyan lines trace a logistics route through the city grid, with subtle neon point markers indicating event locations. The style is industrial, high-contrast, and professional with a mission control atmosphere." data-location="Chicago" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAzV_QqwH2SGqT02m72I3J09qOPsLCpyMGZ_aoRjhCK3WkBk_P7rU_uzYcjkzC7HFyGDMB1N05dd35UTCaijGTmDYqNUH6IHN6uLbCDCy6L2x4brQa0YZ_1bG_KmOIznjmsLLlln20aPbtuEmIs9ZoR4vB64zO9SPGFxZTb5u7y2cQy9b28QbYksYL18UtphhZzU8HwdPvyPT-SbYuJdVya9hE5yyqk-AMNgZLWnr0mHFULQ55Cl4lyk3hPz2UEin4oD5vcbtSH_GWf')"></div>
+<div class="absolute inset-0 z-0 map-gradient-overlay pointer-events-none"></div>
+<!-- Floating Overlays on Map -->
+<div class="absolute top-6 left-6 z-10 flex flex-col gap-3">
+<div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/50 p-4 rounded-xl shadow-2xl w-64">
+<div class="flex items-center justify-between mb-2">
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Playback</span>
+<div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-black text-white font-data-mono">54</span>
+<span class="text-sm text-slate-400">MPH</span>
+</div>
+<div class="mt-3 flex gap-2">
+<div class="flex-1 bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%]"></div>
+</div>
+<span class="text-[10px] text-slate-400 font-data-mono">65% FUEL</span>
+</div>
+</div>
+<div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/50 p-3 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-error text-xl">warning</span>
+<div class="text-xs">
+<p class="text-slate-100 font-bold">Hard Braking Detected</p>
+<p class="text-slate-400">0.8g deceleration at 14:22:04</p>
+</div>
+</div>
+</div>
+<!-- Map Tools -->
+<div class="absolute right-6 top-6 z-10 flex flex-col gap-2">
+<button class="w-10 h-10 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-slate-300">layers</span>
+</button>
+<button class="w-10 h-10 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-slate-300">my_location</span>
+</button>
+<div class="flex flex-col border border-slate-700 rounded-lg bg-slate-900 overflow-hidden">
+<button class="w-10 h-10 flex items-center justify-center hover:bg-slate-800 border-b border-slate-700"><span class="material-symbols-outlined text-slate-300">add</span></button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-slate-800"><span class="material-symbols-outlined text-slate-300">remove</span></button>
+</div>
+</div>
+<!-- Playback Scrubber Bar (Mandatory) -->
+<div class="absolute bottom-6 left-6 right-6 z-20">
+<div class="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+<div class="flex flex-col gap-4">
+<!-- Timeline -->
+<div class="relative group cursor-pointer">
+<div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary relative playback-progress transition-all duration-300">
+<div class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-4 border-primary shadow-lg scale-0 group-hover:scale-100 transition-transform"></div>
+</div>
+</div>
+<!-- Event Markers on Timeline -->
+<div class="absolute top-0 left-[22%] w-1.5 h-2 bg-error rounded-full" title="Hard Braking"></div>
+<div class="absolute top-0 left-[45%] w-1.5 h-2 bg-amber-500 rounded-full" title="Refueling Stop"></div>
+<div class="absolute top-0 left-[78%] w-1.5 h-2 bg-error rounded-full" title="Speeding"></div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-6">
+<!-- Controls -->
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:text-white transition-colors"><span class="material-symbols-outlined">skip_previous</span></button>
+<button class="w-12 h-12 bg-primary hover:bg-primary-container rounded-full flex items-center justify-center text-white transition-all active:scale-95">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+</button>
+<button class="text-slate-400 hover:text-white transition-colors"><span class="material-symbols-outlined">skip_next</span></button>
+</div>
+<!-- Time Indicator -->
+<div class="flex flex-col">
+<span class="text-xl font-data-mono font-bold text-white leading-none">14:42:08</span>
+<span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">October 24, 2023</span>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<!-- Playback Speeds -->
+<div class="flex bg-slate-800/50 p-1 rounded-lg border border-slate-700">
+<button class="px-3 py-1 text-[10px] font-bold text-slate-400 hover:text-white rounded transition-colors">1x</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-slate-700 text-white rounded transition-colors">2x</button>
+<button class="px-3 py-1 text-[10px] font-bold text-slate-400 hover:text-white rounded transition-colors">5x</button>
+</div>
+<!-- Map Interactions -->
+<div class="flex items-center gap-3">
+<button class="text-slate-400 hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">history</span>
+<span class="text-[11px] font-bold">REPLAY</span>
+</button>
+<button class="text-slate-400 hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">share</span>
+<span class="text-[11px] font-bold">SHARE</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side Panel: Summary & Logs -->
+<aside class="w-[380px] bg-slate-900 border-l border-slate-800 flex flex-col z-30 shadow-2xl">
+<!-- Trip Summary Section -->
+<div class="p-6 border-b border-slate-800">
+<h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Trip Summary</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-slate-800/30 border border-slate-700/50 p-3 rounded-xl">
+<p class="text-[10px] text-slate-500 font-bold uppercase">Distance</p>
+<p class="text-lg font-data-mono font-bold text-white">184.2 mi</p>
+</div>
+<div class="bg-slate-800/30 border border-slate-700/50 p-3 rounded-xl">
+<p class="text-[10px] text-slate-500 font-bold uppercase">Duration</p>
+<p class="text-lg font-data-mono font-bold text-white">3.5 hrs</p>
+</div>
+<div class="bg-slate-800/30 border border-slate-700/50 p-3 rounded-xl">
+<p class="text-[10px] text-slate-500 font-bold uppercase">Avg Speed</p>
+<p class="text-lg font-data-mono font-bold text-white">52.6 mph</p>
+</div>
+<div class="bg-slate-800/30 border border-slate-700/50 p-3 rounded-xl">
+<p class="text-[10px] text-slate-500 font-bold uppercase">Idle Time</p>
+<p class="text-lg font-data-mono font-bold text-amber-500">12 min</p>
+</div>
+<div class="bg-slate-800/30 border border-slate-700/50 p-3 rounded-xl">
+<p class="text-[10px] text-slate-500 font-bold uppercase">Fuel Used</p>
+<p class="text-lg font-data-mono font-bold text-white">24.5 gal</p>
+</div>
+<div class="bg-slate-800/30 border border-slate-700/50 p-3 rounded-xl">
+<p class="text-[10px] text-slate-500 font-bold uppercase">Est. Cost</p>
+<p class="text-lg font-data-mono font-bold text-emerald-400">$102.40</p>
+</div>
+</div>
+</div>
+<!-- Event Log Section -->
+<div class="flex-1 flex flex-col overflow-hidden">
+<div class="p-6 pb-2 flex justify-between items-center">
+<h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Timestamped Event Log</h3>
+<span class="text-[10px] font-bold px-2 py-0.5 bg-primary/20 text-primary border border-primary/30 rounded">9 EVENTS</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar px-6 space-y-4 pb-12">
+<!-- Log Item: Active -->
+<div class="relative pl-6 py-2 border-l border-primary">
+<div class="absolute -left-1.5 top-3 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_#2563eb]"></div>
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-white">Current Position</p>
+<span class="text-[10px] font-data-mono text-slate-500">14:42:08</span>
+</div>
+<p class="text-xs text-slate-400">Interstate 90 Express, Chicago, IL</p>
+</div>
+<!-- Log Item: Alert -->
+<div class="relative pl-6 py-2 border-l border-error">
+<div class="absolute -left-1.5 top-3 w-3 h-3 rounded-full bg-error"></div>
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-error">Hard Braking Alert</p>
+<span class="text-[10px] font-data-mono text-slate-500">14:22:04</span>
+</div>
+<p class="text-xs text-slate-400">Rapid deceleration from 65mph to 22mph detected. Proximity sensor triggered.</p>
+</div>
+<!-- Log Item: Activity -->
+<div class="relative pl-6 py-2 border-l border-slate-700">
+<div class="absolute -left-1 top-3 w-2 h-2 rounded-full bg-slate-700"></div>
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-slate-300">Refueling Stop</p>
+<span class="text-[10px] font-data-mono text-slate-500">12:15:30</span>
+</div>
+<p class="text-xs text-slate-400">Shell Station #402. Duration: 14 mins. 20.4 gal added.</p>
+</div>
+<!-- Log Item: Alert -->
+<div class="relative pl-6 py-2 border-l border-amber-500">
+<div class="absolute -left-1.5 top-3 w-3 h-3 rounded-full bg-amber-500"></div>
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-amber-500">Hard Acceleration</p>
+<span class="text-[10px] font-data-mono text-slate-500">11:04:12</span>
+</div>
+<p class="text-xs text-slate-400">Sudden throttle increase at traffic light intersection.</p>
+</div>
+<!-- Log Item: Start -->
+<div class="relative pl-6 py-2 border-l border-emerald-500">
+<div class="absolute -left-1.5 top-3 w-3 h-3 rounded-full bg-emerald-500"></div>
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-emerald-500">Trip Started</p>
+<span class="text-[10px] font-data-mono text-slate-500">08:30:00</span>
+</div>
+<p class="text-xs text-slate-400">Depot Alpha (Main Terminal). Ignition on, checklist completed.</p>
+</div>
+<!-- Spacer for bottom shadow -->
+<div class="h-4"></div>
+</div>
+</div>
+<!-- Secondary Actions -->
+<div class="p-6 bg-slate-950/50 border-t border-slate-800 grid grid-cols-2 gap-3">
+<button class="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-3 rounded-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm">download</span> EXPORT DATA
+                    </button>
+<button class="bg-primary hover:bg-primary-container text-white font-bold text-xs py-3 rounded-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-sm">feedback</span> SEND REPORT
+                    </button>
+</div>
+</aside>
+</div>
+</main>
+<!-- Interactions Script -->
+<script>
+        // Simple micro-interaction for the playback scrubber
+        document.querySelector('.playback-progress').parentElement.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const percentage = (x / rect.width) * 100;
+            document.querySelector('.playback-progress').style.width = percentage + '%';
+        });
+
+        // Hover effects for event logs
+        const logs = document.querySelectorAll('.custom-scrollbar > div');
+        logs.forEach(log => {
+            log.addEventListener('mouseenter', () => {
+                log.style.backgroundColor = 'rgba(255,255,255,0.02)';
+            });
+            log.addEventListener('mouseleave', () => {
+                log.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+</body></html>

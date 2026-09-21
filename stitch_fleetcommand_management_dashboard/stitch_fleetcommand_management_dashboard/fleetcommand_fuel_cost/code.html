@@ -1,0 +1,574 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Fuel &amp; Cost Analytics | FleetCommand</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .data-mono { font-family: 'Inter', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #434655; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #737686; }
+        
+        .glass-card {
+            background: rgba(46, 48, 57, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(115, 118, 134, 0.2);
+        }
+
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-soft { animation: pulse-soft 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-surface-variant": "#434655",
+                        "tertiary-container": "#bc4800",
+                        "secondary": "#505f76",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#eeefff",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#b4c5ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191b23",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-container-high": "#e7e7f3",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "background": "#faf8ff",
+                        "surface-container-highest": "#e1e2ed",
+                        "surface": "#faf8ff",
+                        "on-background": "#191b23",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c3c6d7",
+                        "on-primary-fixed": "#00174b",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f3f3fe",
+                        "primary-fixed": "#dbe1ff",
+                        "primary-container": "#2563eb",
+                        "surface-tint": "#0053db",
+                        "surface-variant": "#e1e2ed",
+                        "inverse-surface": "#2e3039",
+                        "on-secondary-container": "#54647a",
+                        "tertiary": "#943700",
+                        "surface-dim": "#d9d9e5",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-fixed": "#0b1c30",
+                        "outline": "#737686",
+                        "inverse-on-surface": "#f0f0fb",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ededf9",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface-bright": "#faf8ff",
+                        "primary": "#004ac6",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-container": "#ffede6",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "secondary-fixed": "#d3e4fe"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar_collapsed": "80px",
+                        "container_padding": "32px",
+                        "component_gap": "16px",
+                        "gutter": "24px",
+                        "sidebar_width": "280px",
+                        "header_height": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "data-mono": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "display": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface dark:bg-inverse-surface text-on-surface dark:text-inverse-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Side Navigation -->
+<aside class="fixed left-0 top-0 h-full w-sidebar_width bg-surface-container-lowest dark:bg-inverse-surface border-r border-outline-variant dark:border-outline shadow-sm flex flex-col py-gutter z-20">
+<div class="px-gutter mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed leading-tight">FleetCommand</h1>
+<p class="text-label-sm font-label-sm text-secondary uppercase tracking-widest opacity-70">Mission Control</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-body-md">Live Tracking</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">local_shipping</span>
+<span class="font-body-md">Vehicles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 border-l-4 border-primary bg-secondary-container text-on-secondary-container font-semibold rounded-r-lg group" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-body-md">Route Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">person_apron</span>
+<span class="font-body-md">Drivers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">build</span>
+<span class="font-body-md">Maintenance</span>
+</a>
+</nav>
+<div class="px-4 mt-auto pt-4 border-t border-outline-variant dark:border-outline">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-high hover:text-on-surface transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md">Support</span>
+</a>
+<button class="mt-4 w-full bg-primary text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:bg-primary-container transition-all active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add_circle</span>
+                Add New Vehicle
+            </button>
+</div>
+</aside>
+<!-- Top Header -->
+<header class="fixed top-0 right-0 h-header_height z-10 flex justify-between items-center px-gutter w-[calc(100%-280px)] ml-sidebar_width bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-low dark:bg-slate-900 border-none rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-primary text-body-md outline-none" placeholder="Search logs, vehicles or transactions..." type="text">
+</div>
+<!-- Date Range Selector -->
+<div class="flex items-center gap-2 bg-surface-container-low dark:bg-slate-900 px-3 py-2 rounded-lg border border-outline-variant dark:border-outline cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">calendar_month</span>
+<span class="text-label-sm font-label-sm whitespace-nowrap">Oct 1, 2023 - Oct 31, 2023</span>
+<span class="material-symbols-outlined text-secondary" style="font-size: 18px;">expand_more</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-secondary relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface dark:border-inverse-surface"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-secondary">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-px bg-outline-variant dark:bg-outline mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="text-body-md font-semibold leading-none group-hover:text-primary transition-colors">Alex Morgan</p>
+<p class="text-label-sm text-secondary">Fleet Manager</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-primary-fixed shadow-md" data-alt="A high-quality professional portrait of a tech-savvy fleet manager in a modern industrial setting. The lighting is crisp and blue-toned, reflecting a mission control environment. Soft bokeh background with blurred data screens." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfw-JZ-GjhoHb3KDhMSPG6J8dOe-h8OS5NYElgEhuezUofZDSAgOjBU-vIquiaWG6IxClg8Domi670LZtPr4xKd9zOUfKGH6kWJSsac1g2KEJA7lU0tUbJtU081c1GM1M1XFQPxqwOGDwfVy7yg4RK7XfEvJfUWvw9ID7I-3hxWldrRiqTQSxMqGvXWZuI3duDaea8Sb3sKNG0egfrpVSxdDLhTiLrrIa4EZ-Vp0FsJo2UZw4gpKeDBucxWCdvjyMR18B3roZC6Qcp">
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-sidebar_width pt-[calc(64px+24px)] px-gutter pb-gutter min-h-screen">
+<div class="max-w-[1600px] mx-auto">
+<header class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="text-display font-display text-on-surface dark:text-white">Fuel &amp; Cost Analytics</h2>
+<p class="text-body-lg text-secondary mt-1">Real-time cost efficiency and consumption monitoring across 42 active units.</p>
+</div>
+<button class="flex items-center gap-2 bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg font-semibold hover:bg-primary-container hover:text-white transition-all shadow-sm">
+<span class="material-symbols-outlined">download</span>
+                    Export Report
+                </button>
+</header>
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-gutter">
+<!-- Total Fuel Cost -->
+<div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+<span class="text-label-sm text-green-500 flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined" style="font-size: 16px;">trending_down</span>
+                            4.2%
+                        </span>
+</div>
+<p class="text-label-sm text-secondary font-semibold uppercase tracking-wider">Total Fuel Cost</p>
+<h3 class="text-headline-lg font-headline-lg mt-1">$124,592.00</h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-primary/20 group-hover:bg-primary transition-colors"></div>
+</div>
+<!-- Avg Cost/km -->
+<div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-secondary/10 rounded-lg text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">route</span>
+</div>
+<span class="text-label-sm text-red-400 flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
+                            1.8%
+                        </span>
+</div>
+<p class="text-label-sm text-secondary font-semibold uppercase tracking-wider">Avg Cost per KM</p>
+<h3 class="text-headline-lg font-headline-lg mt-1">$0.84 <span class="text-body-md font-normal text-secondary">/km</span></h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-secondary/20 group-hover:bg-secondary transition-colors"></div>
+</div>
+<!-- Avg Mileage -->
+<div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-tertiary-container/10 rounded-lg text-tertiary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">gas_meter</span>
+</div>
+<span class="text-label-sm text-green-500 flex items-center gap-1 font-bold">
+<span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+                            Optimal
+                        </span>
+</div>
+<p class="text-label-sm text-secondary font-semibold uppercase tracking-wider">Avg Mileage</p>
+<h3 class="text-headline-lg font-headline-lg mt-1">12.4 <span class="text-body-md font-normal text-secondary">km/L</span></h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-tertiary-container/20 group-hover:bg-tertiary-container transition-colors"></div>
+</div>
+<!-- Anomalies -->
+<div class="glass-card p-6 rounded-xl border-error/30 bg-error/5 relative overflow-hidden group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-error/10 rounded-lg text-error">
+<span class="material-symbols-outlined animate-pulse-soft" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<span class="text-label-sm text-error flex items-center gap-1 font-bold">
+                            Active Alerts
+                        </span>
+</div>
+<p class="text-label-sm text-secondary font-semibold uppercase tracking-wider">Cost Anomalies</p>
+<h3 class="text-headline-lg font-headline-lg mt-1 text-error">08</h3>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-error/50 group-hover:bg-error transition-colors"></div>
+</div>
+</div>
+<!-- Visualizations Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mb-gutter">
+<!-- Fuel Cost Line Chart -->
+<div class="lg:col-span-2 glass-card rounded-xl p-6">
+<div class="flex justify-between items-center mb-6">
+<h4 class="text-headline-md font-headline-md">Monthly Cost Trend</h4>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 bg-primary rounded-full"></span>
+<span class="text-label-sm">Fuel Cost</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 bg-secondary rounded-full"></span>
+<span class="text-label-sm">Budget</span>
+</div>
+</div>
+</div>
+<div class="h-[300px] w-full relative">
+<!-- Abstract Chart Representation using CSS and SVGs -->
+<div class="absolute inset-0 flex items-end justify-between px-2 pt-10">
+<div class="w-full h-full border-l border-b border-outline-variant flex items-end relative">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none">
+<defs>
+<linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#004ac6" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#004ac6" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0,80 Q50,60 100,120 T200,90 T300,140 T400,100 T500,130 T600,110 T700,70 L700,300 L0,300 Z" fill="url(#chartGradient)"></path>
+<path d="M0,80 Q50,60 100,120 T200,90 T300,140 T400,100 T500,130 T600,110 T700,70" fill="none" stroke="#004ac6" stroke-linecap="round" stroke-width="3"></path>
+<line stroke="#505f76" stroke-dasharray="8,4" stroke-width="1" x1="0" x2="100%" y1="110" y2="110"></line>
+</svg>
+<!-- Tooltip Marker -->
+<div class="absolute left-[70%] bottom-[130px] -translate-x-1/2 -translate-y-1/2 group">
+<div class="w-4 h-4 bg-primary border-4 border-white dark:border-inverse-surface rounded-full shadow-lg"></div>
+<div class="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-on-surface text-white px-3 py-1.5 rounded-lg text-label-sm whitespace-nowrap shadow-xl">
+                                        Oct 24: $4,231
+                                    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Cost Breakdown Donut -->
+<div class="glass-card rounded-xl p-6 flex flex-col">
+<h4 class="text-headline-md font-headline-md mb-6">Cost Distribution</h4>
+<div class="flex-1 flex flex-col justify-center items-center">
+<div class="relative w-48 h-48">
+<svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#1e293b" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#004ac6" stroke-dasharray="251.2" stroke-dashoffset="62.8" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#bc4800" stroke-dasharray="251.2" stroke-dashoffset="180" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="#505f76" stroke-dasharray="251.2" stroke-dashoffset="220" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-display font-display text-2xl">$124k</span>
+<span class="text-label-sm text-secondary">Total</span>
+</div>
+</div>
+<div class="mt-8 grid grid-cols-1 gap-3 w-full">
+<div class="flex justify-between items-center text-body-md">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-primary rounded-full"></div>
+<span>Regular Fuel</span>
+</div>
+<span class="font-semibold">75%</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-tertiary-container rounded-full"></div>
+<span>Premium / DEF</span>
+</div>
+<span class="font-semibold">15%</span>
+</div>
+<div class="flex justify-between items-center text-body-md">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 bg-secondary rounded-full"></div>
+<span>Additives</span>
+</div>
+<span class="font-semibold">10%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Cost per KM by Vehicle -->
+<div class="glass-card rounded-xl p-6 mb-gutter">
+<div class="flex justify-between items-center mb-6">
+<h4 class="text-headline-md font-headline-md">Cost efficiency by Unit</h4>
+<select class="bg-surface-container-low dark:bg-slate-900 border border-outline-variant text-body-md px-3 py-1.5 rounded-lg outline-none focus:ring-2 focus:ring-primary">
+<option>Sort by highest cost</option>
+<option>Sort by efficiency</option>
+</select>
+</div>
+<div class="space-y-6">
+<!-- Vehicle Efficiency Bar -->
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="font-semibold">Semi-Truck-A01 <span class="text-secondary font-normal ml-2">#88219</span></span>
+<span class="text-error font-bold">$1.12 /km</span>
+</div>
+<div class="w-full h-3 bg-surface-container-low dark:bg-slate-900 rounded-full overflow-hidden">
+<div class="h-full bg-error w-[92%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="font-semibold">Freight-Van-V22 <span class="text-secondary font-normal ml-2">#99312</span></span>
+<span class="text-primary font-bold">$0.64 /km</span>
+</div>
+<div class="w-full h-3 bg-surface-container-low dark:bg-slate-900 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[55%]"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-body-md">
+<span class="font-semibold">Box-Truck-B09 <span class="text-secondary font-normal ml-2">#44123</span></span>
+<span class="text-primary font-bold">$0.78 /km</span>
+</div>
+<div class="w-full h-3 bg-surface-container-low dark:bg-slate-900 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[65%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Fuel Logs Table -->
+<div class="glass-card rounded-xl overflow-hidden shadow-xl">
+<div class="p-6 border-b border-outline-variant dark:border-outline flex justify-between items-center">
+<h4 class="text-headline-md font-headline-md">Detailed Fuel Logs</h4>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-secondary"><span class="material-symbols-outlined">filter_list</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-secondary"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low dark:bg-slate-900/50">
+<th class="px-6 py-4 text-label-sm font-label-sm uppercase text-secondary">Date</th>
+<th class="px-6 py-4 text-label-sm font-label-sm uppercase text-secondary">Vehicle ID</th>
+<th class="px-6 py-4 text-label-sm font-label-sm uppercase text-secondary text-right">Liters</th>
+<th class="px-6 py-4 text-label-sm font-label-sm uppercase text-secondary text-right">Cost</th>
+<th class="px-6 py-4 text-label-sm font-label-sm uppercase text-secondary text-right">Odometer</th>
+<th class="px-6 py-4 text-label-sm font-label-sm uppercase text-secondary">Status</th>
+<th class="px-6 py-4 text-label-sm font-label-sm uppercase text-secondary text-center">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant dark:divide-outline">
+<!-- Table Row 1 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors group">
+<td class="px-6 py-4 data-mono">2023-10-28 14:22</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">local_shipping</span>
+</div>
+<div>
+<p class="font-semibold">Truck-A01</p>
+<p class="text-label-sm text-secondary">Semi-Trailer</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right data-mono">420.50 L</td>
+<td class="px-6 py-4 text-right data-mono font-bold">$752.12</td>
+<td class="px-6 py-4 text-right data-mono">124,592 km</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error/10 text-error text-label-sm font-bold border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        High Variance
+                                    </span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+</td>
+</tr>
+<!-- Table Row 2 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors group">
+<td class="px-6 py-4 data-mono">2023-10-28 09:15</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-size: 18px;">airport_shuttle</span>
+</div>
+<div>
+<p class="font-semibold">Van-V22</p>
+<p class="text-label-sm text-secondary">Transit Van</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right data-mono">82.00 L</td>
+<td class="px-6 py-4 text-right data-mono font-bold">$146.50</td>
+<td class="px-6 py-4 text-right data-mono">45,122 km</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-label-sm font-bold border border-green-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Normal
+                                    </span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+</td>
+</tr>
+<!-- Table Row 3 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors group">
+<td class="px-6 py-4 data-mono">2023-10-27 18:40</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">local_shipping</span>
+</div>
+<div>
+<p class="font-semibold">Truck-B09</p>
+<p class="text-label-sm text-secondary">Medium Box</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right data-mono">155.20 L</td>
+<td class="px-6 py-4 text-right data-mono font-bold">$274.90</td>
+<td class="px-6 py-4 text-right data-mono">88,230 km</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-label-sm font-bold border border-green-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Normal
+                                    </span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+</td>
+</tr>
+<!-- Table Row 4 -->
+<tr class="hover:bg-surface-container-high/50 transition-colors group">
+<td class="px-6 py-4 data-mono">2023-10-27 11:05</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">local_shipping</span>
+</div>
+<div>
+<p class="font-semibold">Truck-A05</p>
+<p class="text-label-sm text-secondary">Semi-Trailer</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right data-mono">395.00 L</td>
+<td class="px-6 py-4 text-right data-mono font-bold">$1,020.45</td>
+<td class="px-6 py-4 text-right data-mono">112,044 km</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error/10 text-error text-label-sm font-bold border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                        Potential Leak
+                                    </span>
+</td>
+<td class="px-6 py-4 text-center">
+<button class="text-secondary hover:text-primary transition-colors"><span class="material-symbols-outlined">visibility</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low dark:bg-slate-900/50 flex items-center justify-between">
+<p class="text-label-sm text-secondary">Showing 1 to 4 of 285 logs</p>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-inverse-surface dark:bg-white text-surface dark:text-inverse-surface text-label-sm font-bold rounded-lg transition-colors">1</button>
+<button class="px-3 py-1 hover:bg-surface-container-high text-label-sm font-bold rounded-lg transition-colors">2</button>
+<button class="px-3 py-1 hover:bg-surface-container-high text-label-sm font-bold rounded-lg transition-colors">3</button>
+<span class="px-3 py-1 text-label-sm font-bold text-secondary">...</span>
+<button class="px-3 py-1 hover:bg-surface-container-high text-label-sm font-bold rounded-lg transition-colors">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions and data simulations
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('FleetCommand Fuel Analytics Ready');
+            
+            // Subtle hover effect logic for glass cards
+            const cards = document.querySelectorAll('.glass-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+                });
+            });
+        });
+    </script>
+</body></html>
