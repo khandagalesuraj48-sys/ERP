@@ -19,7 +19,7 @@ interface SearchResult {
 
 const STATIC_ACTIONS: SearchResult[] = [
   { id: "act-new-machine", category: "Quick Actions", title: "Add New Machinery", subtitle: "Register new vehicle or plant equipment", href: "/machinery?action=new", icon: "add_circle" },
-  { id: "act-new-log", category: "Quick Actions", title: "Create Daily Log Book Entry", subtitle: "Record equipment shift hours and KM", href: "/machinery/log-book?action=new", icon: "menu_book" },
+  { id: "act-new-log", category: "Quick Actions", title: "Create Daily Log Book Entry", subtitle: "Record equipment shift hours and KM", href: "/machinery/log-book/new", icon: "menu_book" },
   { id: "act-new-fuel", category: "Quick Actions", title: "Issue Diesel / Fuel", subtitle: "Dispense fuel with theoretical balance check", href: "/machinery/fuel?action=new", icon: "local_gas_station" },
   { id: "act-report", category: "Quick Actions", title: "Generate Operations Report", subtitle: "Open ERP reporting & print engine", href: "/reports", icon: "assessment" },
   { id: "act-compliance", category: "Quick Actions", title: "Statutory Compliance Matrix", subtitle: "Check Road Tax, Fitness, Insurance, PUC", href: "/compliance", icon: "verified" },

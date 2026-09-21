@@ -1082,6 +1082,16 @@ export async function getLogBooks(machineryId?: string): Promise<LogBook[]> {
   return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
+export async function getLogBookById(id: string): Promise<LogBook | undefined> {
+  if (supabase) {
+    const { data, error } = await supabase.from("log_books").select("*").eq("id", id).single();
+    if (error || !data) return undefined;
+    return mapDbToLogBook(data);
+  }
+  const items = getLocal<LogBook>(STORAGE_KEYS.LOG_BOOKS, []);
+  return items.find((l) => l.id === id);
+}
+
 export async function getLatestLogBookReading(
   machineryId: string,
   beforeDate?: string,
